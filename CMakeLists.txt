@@ -36,21 +36,23 @@ set(PLUGIN_SOURCES
     ${PLUGIN_SRC_DIR}/ipinputwidget.cpp
     ${PLUGIN_SRC_DIR}/renderer/osdRenderer.cpp
     ${PLUGIN_SRC_DIR}/renderer/shader.cpp
-    ${PLUGIN_SRC_DIR}/stb/stbi_image.cpp
+    ${PLUGIN_SRC_DIR}/libs/stb/stbi_image.cpp
 )
 
 include_directories(
-    "${PLUGIN_SRC_DIR}/SDK/CHeaders/Widgets"
-    "${PLUGIN_SRC_DIR}/SDK/CHeaders/Wrappers"
-    "${PLUGIN_SRC_DIR}/SDK/CHeaders/XPLM"
-    "${PLUGIN_SRC_DIR}/mINI"
-    "${PLUGIN_SRC_DIR}/OpenAL/include"
+    "${PLUGIN_SRC_DIR}/libs/xplane_sdk/sdk/CHeaders/Widgets"
+    "${PLUGIN_SRC_DIR}/libs/xplane_sdk/sdk/CHeaders/Wrappers"
+    "${PLUGIN_SRC_DIR}/libs/xplane_sdk/sdk/CHeaders/XPLM"
+    "${PLUGIN_SRC_DIR}/libs//mINI/src"
+    "${PLUGIN_SRC_DIR}/libs/OpenAL/include"
+    "${PLUGIN_SRC_DIR}/libs/mINI/src"
+     "${PLUGIN_SRC_DIR}/libs/stb"
 )
 
 if (WIN32)
-    list(APPEND CMAKE_LIBRARY_PATH "${PLUGIN_SRC_DIR}/SDK/Libraries/Win")
+    list(APPEND CMAKE_LIBRARY_PATH "${PLUGIN_SRC_DIR}/libs/xplane_sdk/sdk/Libraries/Win")
 elseif (APPLE)
-    list(APPEND CMAKE_FRAMEWORK_PATH "${PLUGIN_SRC_DIR}/SDK/Libraries/Mac")
+    list(APPEND CMAKE_FRAMEWORK_PATH "${PLUGIN_SRC_DIR}/libs/xplane_sdk/sdk/Libraries/Mac")
 elseif (UNIX)
 
 endif ()

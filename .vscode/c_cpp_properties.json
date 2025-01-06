@@ -32,8 +32,9 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceRoot}",
-                "${workspaceRoot}/src/glew/**",
-                "${workspaceFolder}/src/SDK/CHeaders/**"
+                "${workspaceRoot}/src/libs/mINI/src/",
+                "${workspaceRoot}/src/libs/stb",
+                "${workspaceFolder}/src/libs/xplane_sdk/sdk/CHeaders/**"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": false,

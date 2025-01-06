@@ -55,7 +55,7 @@
 //#include <functional>
 
 #include <GL/glew.h>
-#include "mINI/ini.h"
+#include <mini/ini.h>
 
 #if LIN || APL
 #define MAX_PATH 1260

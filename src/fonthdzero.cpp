@@ -1,7 +1,7 @@
 #include "fonthdzero.h"
 
 #include "util.h"
-#include "stb/stb_image.h"
+#include <stb_image.h>
 
 #define OSD_CHAR_WIDTH_24 24
 #define OSD_CHAR_HEIGHT_24 36

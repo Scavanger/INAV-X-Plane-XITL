@@ -1,8 +1,8 @@
+#include <stb_image.h>
 
 #include "fontanalog.h"
 #include "util.h"
 
-#include "stb/stb_image.h"
 
 #define FONT_IMAGE_WIDTH   209
 #define FONT_IMAGE_HEIGHT  609
