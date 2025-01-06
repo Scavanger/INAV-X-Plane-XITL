@@ -18,12 +18,15 @@ TSimData g_simData;
 //==============================================================
 void TSimData::init()
 {
-  this->gps_lastUpdate = GetTickCount() - 1000;
+  this->gps_lastUpdate = GetTicks() - 1000;
   this->GPSHasNewData = false;
 
   this->gps_fix = GPS_FIX_3D;
   this->gps_numSat = 12;
-  this->gps_spoofing = 0;
+  this->gps_glitch = GPS_GLITCH_NONE;
+  this->gps_timeout = false;
+
+  this->simulate_mag_failure = false;
 
   this->df_lattitude = XPLMFindDataRef("sim/flightmodel/position/latitude");
   this->df_longitude = XPLMFindDataRef("sim/flightmodel/position/longitude");
@@ -74,6 +77,8 @@ void TSimData::init()
   this->estimated_attitude_yaw = 0;
 
   this->simulatePitot = true;
+  this->simulatePitotFailureHW = false;
+  this->simulatePitotFailure60 = false;
   this->airspeed = 0;
 
 	//---- output ----
@@ -91,7 +96,7 @@ void TSimData::init()
   this->isAirplane = false;
   this->isArmed = false;
   this->isOSDDisabled = false;
-  this->isOSDAnalogOSDNotFound = false;
+  this->isSupportedOSDNotFound = false;
 
   this->setBateryEmulation(BATTERY_INFINITE);
 }
@@ -100,7 +105,7 @@ void TSimData::init()
 //==============================================================
 void TSimData::updateFromXPlane()
 {
-  uint32_t t = GetTickCount();
+  uint32_t t = GetTicks();
 
   if ((t - this->gps_lastUpdate) >= (1000 / GPS_RATE_HZ) )                
   {
@@ -125,7 +130,21 @@ void TSimData::updateFromXPlane()
   this->pitch = XPLMGetDataf(this->df_pitch);
   this->yaw = XPLMGetDataf(this->df_yaw);
 
-  this->accel_x = XPLMGetDataf(this->df_accel_x);
+  float kick = 0;
+  if (this->autolaunch_kickStart != 0)
+  {
+    uint32_t t = GetTicks();
+    uint32_t dt = t - this->autolaunch_kickStart;
+    if (dt > 1000)
+    {
+      this->autolaunch_kickStart = 0;
+    }
+    else
+    {
+      kick = 4 * sin(dt / 180.0f * 3.14f);
+    }
+  }
+  this->accel_x = XPLMGetDataf(this->df_accel_x) + kick;
   this->accel_y = XPLMGetDataf(this->df_accel_y);
   this->accel_z = XPLMGetDataf(this->df_accel_z);
 
@@ -160,7 +179,7 @@ void TSimData::updateFromINAV(const TMSPSimulatorFromINAV* data)
   bool prevArmed = this->isArmed;
   this->isArmed = (data->debugIndex & FIF_ARMED) != 0;
   this->isOSDDisabled = (data->debugIndex & FIF_OSD_DISABLED) != 0;
-  this->isOSDAnalogOSDNotFound = (data->debugIndex & FIF_ANALOG_OSD_NOT_FOUND) != 0;
+  this->isSupportedOSDNotFound = (data->debugIndex & FIF_ANALOG_OSD_NOT_FOUND) != 0;
 
   if (this->isArmed && !prevArmed)
   {
@@ -183,7 +202,7 @@ void TSimData::updateFromINAV(const TMSPSimulatorFromINAV* data)
     g_map.addDebug(g_stats.debug[0], g_stats.debug[1]);
   }
 
-  uint32_t t = GetTickCount();
+  uint32_t t = GetTicks();
   uint32_t delta = t - this->lastUpdateMS;
   if ((this->lastUpdateMS != 0) && (delta < 300))
   {
@@ -204,25 +223,96 @@ void TSimData::sendToINAV()
     ((this->batEmulation != BATTERY_NONE) ? SIMU_SIMULATE_BATTERY : 0) |
     (this->muteBeeper ? SIMU_MUTE_BEEPER : 0) |
     (this->attitude_use_sensors ? SIMU_USE_SENSORS : 0) |
-    (this->GPSHasNewData ? SIMU_HAS_NEW_GPS_DATA : 0) |
+    (this->GPSHasNewData && !this->gps_timeout ? SIMU_HAS_NEW_GPS_DATA : 0) |
     SIMU_EXT_BATTERY_VOLTAGE |
-    (this->simulatePitot ? SIMU_AIRSPEED : 0 );
+    (this->simulatePitot ? SIMU_AIRSPEED : 0) |
+    SIMU_EXTENDED_FLAGS;
+
+  data.flags2 = (this->gps_timeout ? SIMU2_GPS_TIMEOUT >> 8 : 0) |
+    (this->simulatePitotFailureHW ? SIMU2_PITOT_FAILURE >> 8 : 0);
 
   this->GPSHasNewData = false;
 
   data.fix = this->gps_fix;
   data.numSat = (uint8_t)this->gps_numSat;
   data.lat = (int32_t)round(this->lattitude * 10000000);
-  data.lon = (int32_t)round(this->longitude * 10000000);
+  data.lon = (int32_t)round(this->longitude * 10000000);      
   data.alt = (int32_t)round(this->elevation * 100); //expected by inav: elevation in cm
   data.speed = (int16_t)round(this->speed * 100); //expected by inav: ground speed cm/sec   
-  data.airspeed = (uint16_t)round(this->airspeed * 100); //expected by inav: ground speed cm/sec   
+  data.airspeed = (uint16_t)round(this->airspeed * 100); //expected by inav: ground speed cm/sec
+  if (this->simulatePitotFailure60)
+  {
+    data.airspeed = (uint16_t)round(1777); 
+  }
   data.course = (int16_t)round(this->course * 10);  // expected by inav: deg * 10
   if (data.course < 0) data.course += 3600;
 
   data.velNED[0] = (int16_t)round(-this->local_vz*100); // nedVelNorth;  
   data.velNED[1] = (int16_t)round( this->local_vx*100); //nedVelEast
   data.velNED[2] = (int16_t)round(-this->local_vy*100); //nedVelDown
+
+  if (this->gps_glitch != GPS_GLITCH_NONE)
+  {
+    if (this->glitch_lattitude == 0)
+    {
+      this->glitch_lattitude = this->lattitude;
+      this->glitch_longitude = this->longitude;
+      this->glitch_elevation = this->elevation;
+    }
+  }
+  else
+  {
+    this->glitch_lattitude = 0;
+    this->glitch_longitude = 0;
+    this->glitch_elevation = 0;
+  }
+
+  if (this->gps_glitch == GPS_GLITCH_FREEZE)
+  {
+    data.lat = (int32_t)round(this->glitch_lattitude * 10000000);
+    data.lon = (int32_t)round(this->glitch_longitude * 10000000);
+    data.alt = (int32_t)round(this->glitch_elevation * 100);
+    data.speed = 0;
+    data.velNED[0] = 0;
+    data.velNED[1] = 0;
+    data.velNED[2] = 0;
+  }
+  else if (this->gps_glitch == GPS_GLITCH_OFFSET)
+  {
+    data.lat = (int32_t)round((this->lattitude + 5 / 111.32) * 10000000);
+    data.lon = (int32_t)round(this->longitude * 10000000);
+    data.alt = (int32_t)round(this->elevation * 100);
+  }
+  else if (this->gps_glitch == GPS_GLITCH_LINEAR)
+  {
+    float k = GetTicks() / 100000.0f;
+    k -= (int)k;
+    data.lat = (int32_t)round((this->lattitude + 1 * k / 111.32) * 10000000);
+    data.lon = (int32_t)round(this->longitude * 10000000);
+    data.alt = (int32_t)round(this->elevation * 100);
+  }
+  else if (this->gps_glitch == GPS_GLITCH_ALTITUDE)
+  {
+    float k = GetTicks() / 100000.0f;
+    k -= (int)k;
+    data.alt = (int32_t)round(this->glitch_elevation * 100 + k * 100000);
+    data.velNED[2] = -(int16_t)round(k * 100000);
+  }
+  else if ((this->gps_glitch == GPS_GLITCH_CIRCLE) || (this->gps_glitch == GPS_GLITCH_CIRCLE_ALTITUDE) || (this->gps_glitch == GPS_GLITCH_CIRCLE_ALTITUDE_5))
+  {
+    float k = GetTicks() / 100000.0f;
+    k -= (int)k;
+    double a = k * 2 * CONST_PI;
+    data.lat = (int32_t)round((this->glitch_lattitude + 1 * sin(a) / 111.32) * 10000000);
+    data.lon = (int32_t)round((this->glitch_longitude + 1 * cos(a) / 111.32) * 10000000);
+    data.alt = (int32_t)round(this->glitch_elevation * 100 + ((this->gps_glitch == GPS_GLITCH_CIRCLE_ALTITUDE) ? k * 100000 : 0));
+    data.velNED[0] = (int16_t)round(sin(a + CONST_PI / 2) * 6283);
+    data.velNED[1] = (int16_t)round(cos(a + CONST_PI / 2) * 6283);
+    data.velNED[2] = (this->gps_glitch == GPS_GLITCH_CIRCLE_ALTITUDE) ? -(int16_t)round(k * 100000) : 0;
+    data.course = (int16_t)round((360 - (a * 180 / CONST_PI)) * 10);  // expected by inav: deg * 10
+    if (data.course > 3600) data.course -= 3600;
+    data.speed = 6283;
+  }
 
   //expected order of rotation from local to global: roll, pitch, yaw
   data.roll =  (int16_t)round( this->roll * 10);  //expected by inav: left wing down - negative roll, 1 degree = 10, values range: -1800...1800
@@ -263,9 +353,18 @@ void TSimData::sendToINAV()
   this->computeQuaternionFromRPY(quat, data.roll, data.pitch, data.yaw );
   this->transformVectorEarthToBody(north, quat);
 
-  data.mag_x = clampToInt16(north[0] * 16000.0f);
-  data.mag_y = clampToInt16(north[1] * 16000.0f);
-  data.mag_z = clampToInt16(north[2] * 16000.0f);
+  if (!this->simulate_mag_failure)
+  {
+    data.mag_x = clampToInt16(north[0] * 16000.0f);
+    data.mag_y = clampToInt16(north[1] * 16000.0f);
+    data.mag_z = clampToInt16(north[2] * 16000.0f);
+  }
+  else
+  {
+    data.mag_x = 0;
+    data.mag_y = 0;
+    data.mag_z = 0;
+  }
 
   this->recalculateBattery();
   data.vbat = (uint8_t)round(this->battery_chargeV * 10);
@@ -377,7 +476,7 @@ void TSimData::disconnect()
 void TSimData::setBateryEmulation(TBatteryEmulationType s)
 {
   this->batEmulation = s;
-  this->battery_lastUpdate = GetTickCount();
+  this->battery_lastUpdate = GetTicks();
   this->battery_chargeV = (s == BATTERY_DISCHAGED) ? 9.8f : 12.6f;
 }
 
@@ -385,7 +484,7 @@ void TSimData::setBateryEmulation(TBatteryEmulationType s)
 //==============================================================
 void TSimData::recalculateBattery()
 {
-  uint32_t t = GetTickCount();
+  uint32_t t = GetTicks();
   uint32_t dt = t - this->battery_lastUpdate;
   this->battery_lastUpdate = t;
   if (dt > 1000) dt = 1000;
@@ -445,6 +544,15 @@ void TSimData::loadConfig(mINI::INIStructure& ini)
     }
   }
 
+  this->gps_timeout = ini[SETTINGS_SECTION].has(SETTINGS_GPS_TIMEOUT) && (ini[SETTINGS_SECTION][SETTINGS_GPS_TIMEOUT] == "1");
+  this->gps_glitch = GPS_GLITCH_NONE;
+  if (ini[SETTINGS_SECTION].has(SETTINGS_GPS_GLITCH))
+  {
+    this->gps_glitch = atoi(ini[SETTINGS_SECTION][SETTINGS_GPS_GLITCH].c_str());
+  }
+
+  this->simulate_mag_failure = ini[SETTINGS_SECTION].has(SETTINGS_MAG_FAILURE) && (ini[SETTINGS_SECTION][SETTINGS_MAG_FAILURE] == "1");
+
   this->attitude_use_sensors = ini[SETTINGS_SECTION].has(SETTINGS_ATTITUDE_USE_SENSORS) && (ini[SETTINGS_SECTION][SETTINGS_ATTITUDE_USE_SENSORS] == "1");
 
   if (ini[SETTINGS_SECTION].has(SETTINGS_BATTERY_EMULATION))
@@ -456,8 +564,17 @@ void TSimData::loadConfig(mINI::INIStructure& ini)
     }
   }
 
-  this->muteBeeper = !ini[SETTINGS_SECTION].has(SETTINGS_MUTE_BEEPER) || (ini[SETTINGS_SECTION][SETTINGS_MUTE_BEEPER] != "0");
+  this->muteBeeper = ini[SETTINGS_SECTION].has(SETTINGS_MUTE_BEEPER) && (ini[SETTINGS_SECTION][SETTINGS_MUTE_BEEPER] != "0");
+
   this->simulatePitot = !ini[SETTINGS_SECTION].has(SETTINGS_SIMULATE_PITOT) || (ini[SETTINGS_SECTION][SETTINGS_SIMULATE_PITOT] != "0");
+  this->simulatePitotFailureHW = ini[SETTINGS_SECTION].has(SETTINGS_SIMULATE_PITOT_FAILURE_HW) && (ini[SETTINGS_SECTION][SETTINGS_SIMULATE_PITOT_FAILURE_HW] == "1");
+  this->simulatePitotFailure60 = ini[SETTINGS_SECTION].has(SETTINGS_SIMULATE_PITOT_FAILURE_60) && (ini[SETTINGS_SECTION][SETTINGS_SIMULATE_PITOT_FAILURE_60] == "1");
+  if (this->simulatePitot)
+  {
+    this->simulatePitotFailureHW = false;
+    this->simulatePitotFailure60 = false;
+  }
+  if (this->simulatePitotFailureHW) this->simulatePitotFailure60 = false;
 }
 
 //==============================================================
@@ -466,8 +583,13 @@ void TSimData::saveConfig(mINI::INIStructure& ini)
 {
   ini[SETTINGS_SECTION][SETTINGS_GPS_NUMSAT] = std::to_string(this->gps_numSat);
   ini[SETTINGS_SECTION][SETTINGS_ATTITUDE_USE_SENSORS] = std::to_string(this->attitude_use_sensors ? 1 : 0);
+  ini[SETTINGS_SECTION][SETTINGS_GPS_TIMEOUT] = std::to_string(this->gps_timeout ? 1 : 0);
+  ini[SETTINGS_SECTION][SETTINGS_GPS_GLITCH] = std::to_string(this->gps_glitch);
+  ini[SETTINGS_SECTION][SETTINGS_MAG_FAILURE] = std::to_string(this->simulate_mag_failure ? 1 : 0);
   ini[SETTINGS_SECTION][SETTINGS_BATTERY_EMULATION] = std::to_string(this->batEmulation);
-  ini[SETTINGS_SECTION][SETTINGS_MUTE_BEEPER] = std::to_string(this->muteBeeper);
-  ini[SETTINGS_SECTION][SETTINGS_SIMULATE_PITOT] = std::to_string(this->simulatePitot);
+  ini[SETTINGS_SECTION][SETTINGS_MUTE_BEEPER] = std::to_string(this->muteBeeper ? 1 : 0);
+  ini[SETTINGS_SECTION][SETTINGS_SIMULATE_PITOT] = std::to_string(this->simulatePitot ? 1 : 0);
+  ini[SETTINGS_SECTION][SETTINGS_SIMULATE_PITOT_FAILURE_HW] = std::to_string(this->simulatePitotFailureHW ? 1 : 0);
+  ini[SETTINGS_SECTION][SETTINGS_SIMULATE_PITOT_FAILURE_60] = std::to_string(this->simulatePitotFailure60 ? 1 : 0);
 }
 

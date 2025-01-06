@@ -14,7 +14,7 @@
 #include "map.h"
 
 uint32_t lastUpdateTime;
-bool wait;
+bool should_wait;
 bool firstRender = true;
 
 XPLMFlightLoopID loopId;
@@ -28,8 +28,8 @@ void cbConnect(TCBConnectParm state)
   g_menu._cbConnect(state);
   g_osd.cbConnect(state);
   g_simData.setBateryEmulation(g_simData.batEmulation); //rechange battery
-  lastUpdateTime = GetTickCount();
-  wait = false;
+  lastUpdateTime = GetTicks();
+  should_wait = false;
 }
 
 //==============================================================
@@ -47,7 +47,11 @@ void cbMessage(int code, const uint8_t* messageBuffer, int length)
     }
     else
     {
-      g_simData.updateFromINAV((const TMSPSimulatorFromINAV*)messageBuffer);
+      TMSPSimulatorFromINAV msg;
+      memset(&msg, 0, sizeof(msg));
+      if (length > sizeof(msg)) return;
+      memcpy(&msg, messageBuffer, length);
+      g_simData.updateFromINAV(&msg);
 
       if (!g_simData.isAirplane)
       {
@@ -62,7 +66,7 @@ void cbMessage(int code, const uint8_t* messageBuffer, int length)
         {
           g_osd.showMsg("OSD IS DISABLED:\n\nCONFIURATION\n->OTHER FEATURES\n->OSD");
         }
-        else if (g_simData.isOSDAnalogOSDNotFound)
+        else if (g_simData.isSupportedOSDNotFound)
         {
           g_osd.showMsg("SUPPORTED OSD TYPE\nNOT FOUND OR DISABLED\n\nCHECK REQUIREMENTS\nON PROJECT PAGE");
         }
@@ -71,7 +75,7 @@ void cbMessage(int code, const uint8_t* messageBuffer, int length)
 
         g_osd.updateFromINAV((const TMSPSimulatorFromINAV*)messageBuffer);
 
-        wait = false;
+        should_wait = false;
       }
     }
   }
@@ -99,12 +103,12 @@ float floop_cb(float elapsed1, float elapsed2, int ctr, void* refcon)
 
   if (g_msp.isConnected())
   {
-    if ((GetTickCount() - lastUpdateTime) > (wait ? MSP_TIMEOUT_MS : MSP_PERIOD_MS ))
+    if ((GetTicks() - lastUpdateTime) > (should_wait ? MSP_TIMEOUT_MS : MSP_PERIOD_MS ))
     {
       g_simData.updateFromXPlane();
       g_simData.sendToINAV();
-      lastUpdateTime = GetTickCount();
-      //wait = true; do not wait for answer, send next state after 10us passed
+      lastUpdateTime = GetTicks();
+      //should_wait = true; do not wait for answer, send next state after 10us passed
     }
   }
 
@@ -145,8 +149,6 @@ PLUGIN_API int XPluginStart(
 	strcpy(outSig, "https://github.com/RomanLut/INAV-X-Plane-HITL");
 	strcpy(outDesc, "INAV Hardware In The Loop");
 
-  g_osd.init();
-
   XPLMRegisterDrawCallback(&drawCallback, xplm_Phase_Window/*xplm_Phase_LastCockpit*/, 0, NULL);
 
 	return 1;
@@ -160,7 +162,6 @@ PLUGIN_API void	XPluginStop(void)
 
   XPLMUnregisterDrawCallback(&drawCallback, xplm_Phase_FirstCockpit, 0, NULL);
 
-  g_osd.destroy();
   g_sound.destroy();
   g_map.destroy();
 
@@ -196,6 +197,7 @@ bool loadIniFile()
   g_osd.loadConfig(ini);
   g_graph.loadConfig(ini);
   g_map.loadConfig(ini);
+  g_menu.loadConfig(ini);
 
   g_menu.updateAll();
 
@@ -211,6 +213,7 @@ bool saveIniFile()
   g_osd.saveConfig(ini);
   g_graph.saveConfig(ini);
   g_map.saveConfig(ini);
+  g_menu.saveConfig(ini);
 
   char iniFileName[MAX_PATH];
   if (!buildIniFileName(iniFileName)) return false;
@@ -226,6 +229,7 @@ PLUGIN_API int XPluginEnable(void)
 {
   LOG("Plugin enable");
 
+  g_osd.init();
   g_stats.init();
   g_simData.init(); //initialize before memu
   g_simData.updateFromXPlane();
@@ -257,6 +261,7 @@ PLUGIN_API void XPluginDisable(void)
 {
   LOG("Plugin disable");
 
+  g_osd.destroy();
   g_stats.close();
 
   if (g_msp.isConnected())

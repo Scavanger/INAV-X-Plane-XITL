@@ -9,6 +9,37 @@
 #include <gtk/gtk.h>
 #endif
 
+#if APL
+#include <dlfcn.h>
+#include <CoreFoundation/CoreFoundation.h>
+#include <string>
+#include <iostream>
+#include <sstream>
+#include <stdio.h>
+#endif
+
+#if APL
+//==============================================================
+//==============================================================
+// Mac specific: this converts file paths from HFS (which we get from the SDK) to Unix (which the OS wants).
+// See this for more info:
+// http://www.xsquawkbox.net/xpsdk/mediawiki/FilePathsAndMacho
+static int ConvertPath(const char * inPath, char * outPath, int outPathMaxLen) {
+
+  CFStringRef inStr = CFStringCreateWithCString(kCFAllocatorDefault, inPath, kCFStringEncodingMacRoman);
+  if (inStr == NULL)
+    return -1;
+  CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, inStr, kCFURLHFSPathStyle, 0);
+  CFStringRef outStr = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
+  if (!CFStringGetCString(outStr, outPath, outPathMaxLen, kCFURLPOSIXPathStyle))
+    return -1;
+  CFRelease(outStr);
+  CFRelease(url);
+  CFRelease(inStr);
+  return 0;
+}
+#endif
+
 //==============================================================
 //==============================================================
 void buildAssetFilename(char pName[MAX_PATH], const char* pFileName)
@@ -31,6 +62,14 @@ void buildAssetFilename(char pName[MAX_PATH], const char* pFileName)
     if (*slash == '\\') *slash = dirchar;
     ++slash;
   }
+#if APL
+  // Convert the path for Mac
+  char convertedPath[MAX_PATH];
+  if (ConvertPath(pName, convertedPath, sizeof(convertedPath)) == 0)
+  {
+    strncpy(pName, convertedPath, MAX_PATH);
+  }
+#endif
 }
 
 //==============================================================
@@ -57,7 +96,7 @@ void LOG(const char* fmt, ...)
   va_list args;
   char msg[1024];
 
-  snprintf(msg, 256, "INAVHITL[%ul]: ", GetTickCount());
+  snprintf(msg, 256, "INAVHITL[%ul]: ", GetTicks());
   size_t hl = strlen(msg);
 
   va_start(args, fmt);
@@ -157,12 +196,12 @@ void delayMS(uint32_t valueMS)
 {
 #if IBM
   Sleep(valueMS);
-#elif LIN
+#elif LIN || APL
   usleep(valueMS*1000);
 #endif
 }
 
-#ifdef LIN
+#if LIN || APL
 //==============================================================
 //==============================================================
 bool IsDebuggerPresent()
@@ -172,11 +211,12 @@ bool IsDebuggerPresent()
 
 #endif
 
-#ifdef LIN
+
 //==============================================================
 //==============================================================
-uint32_t GetTickCount()
+uint32_t GetTicks()
 {
+  #if LIN
   enum
   {
 #ifdef CLOCK_BOOTTIME
@@ -188,30 +228,15 @@ uint32_t GetTickCount()
   struct timespec spec;
   clock_gettime(boot_time_id, &spec);
   return (uint32_t)(((uint64_t)spec.tv_sec) * 1000 + ((uint64_t)spec.tv_nsec) / 1000000);
-}
+#elif APL
+  struct timespec spec;
+  clock_gettime(CLOCK_MONOTONIC, &spec);
+  return (uint32_t)(((uint64_t)spec.tv_sec) * 1000 + ((uint64_t)spec.tv_nsec) / 1000000);
+#elif IBM
+  return (uint32_t)GetTickCount64();
 #endif
-
-#if APL
-//==============================================================
-//==============================================================
-// Mac specific: this converts file paths from HFS (which we get from the SDK) to Unix (which the OS wants).
-// See this for more info:
-// http://www.xsquawkbox.net/xpsdk/mediawiki/FilePathsAndMacho
-static int ConvertPath(const char * inPath, char * outPath, int outPathMaxLen) {
-
-  CFStringRef inStr = CFStringCreateWithCString(kCFAllocatorDefault, inPath, kCFStringEncodingMacRoman);
-  if (inStr == NULL)
-    return -1;
-  CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, inStr, kCFURLHFSPathStyle, 0);
-  CFStringRef outStr = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
-  if (!CFStringGetCString(outStr, outPath, outPathMaxLen, kCFURLPOSIXPathStyle))
-    return -1;
-  CFRelease(outStr);
-  CFRelease(url);
-  CFRelease(inStr);
-  return 0;
 }
-#endif
+
 
 #if IBM
 //==============================================================
@@ -262,3 +287,91 @@ extern void getClipboardText(char str[1024])
   }
 }
 #endif
+
+#if APL
+//==============================================================
+//==============================================================
+extern void getClipboardText(char str[1024])
+{
+  memset(str, 0, 1024);
+
+  FILE* pipe = popen("pbpaste", "r");
+  if (!pipe) return;
+
+  if (!feof(pipe))
+  {
+    fgets(str, 1023, pipe);
+  }
+  pclose(pipe);
+}
+#endif
+
+//==============================================================
+//==============================================================
+int smallestPowerOfTwo(int value, int minValue)
+{
+  if (value < minValue)
+  {
+    return minValue; 
+  }
+
+  if (value < 2)
+  {
+    return 2;
+  }
+
+  int powerOfTwo = 1;
+  while (powerOfTwo < value)
+  {
+    powerOfTwo <<= 1;
+  }
+
+  return powerOfTwo;
+}
+
+//==============================================================
+//==============================================================
+//subPath = "assets\\fonts"
+std::vector<std::filesystem::path> getFontPaths(const char* subPath, bool directories)  
+{
+  char dirName[MAX_PATH];
+  buildAssetFilename(dirName, subPath);
+  std::vector<std::filesystem::path> fontList;
+  std::filesystem::path path = std::string(dirName);
+  if (std::filesystem::exists(path)) {
+    for (auto dirEntry = std::filesystem::recursive_directory_iterator(path); dirEntry != std::filesystem::recursive_directory_iterator(); ++dirEntry) {
+      dirEntry.disable_recursion_pending();
+      if (dirEntry->is_directory() && directories)
+        fontList.push_back(dirEntry->path());
+      if (dirEntry->is_regular_file() && !directories)
+        fontList.push_back(dirEntry->path());
+    }
+  }
+  return fontList;
+}
+
+//==============================================================
+//==============================================================
+std::string toLower(const std::string& str)
+{
+  std::string result = str;
+  std::transform(result.begin(), result.end(), result.begin(), [](unsigned char c)
+  {
+    return std::tolower(c);
+  });
+  return result;
+}
+
+//=======================================================
+//=======================================================
+bool validateIpAddress(const std::string ipAddress)
+{
+  struct sockaddr_in sa;
+#if IBM
+  return InetPton(AF_INET, ipAddress.c_str(), &(sa.sin_addr)) == 1;
+#else
+  int result = inet_pton(AF_INET, ipAddress.c_str(), &(sa.sin_addr));
+  return result != 0;
+#endif
+}
+

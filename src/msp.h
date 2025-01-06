@@ -2,9 +2,10 @@
 
 #include "config.h"
 
-#include "serial.h"
+#include "serialbase.h"
 
 #define MSP_API_VERSION   1
+#define MSP_FC_VERSION    3
 #define MSP_SIMULATOR     0x201F
 #define MSP_DEBUGMSG      253
 #define MSP_WP_GETINFO    20
@@ -31,6 +32,17 @@ struct TMSPAPIVersion
   uint8_t protocolVersion;
   uint8_t APIMajor;
   uint8_t APIMinor;
+};
+#pragma pack()
+
+//======================================================
+//======================================================
+#pragma pack(1)
+struct TMSPFCVersion
+{
+  uint8_t major;
+  uint8_t minor;
+  uint8_t patchVersion;
 };
 #pragma pack()
 
@@ -75,8 +87,12 @@ typedef enum
   SIMU_MUTE_BEEPER          = (1 << 2),
   SIMU_USE_SENSORS          = (1 << 3),
   SIMU_HAS_NEW_GPS_DATA     = (1 << 4),
-  SIMU_EXT_BATTERY_VOLTAGE  = (1 << 5), //extend MSP_SIMULATOR format 2
-  SIMU_AIRSPEED             = (1 << 6)
+  SIMU_EXT_BATTERY_VOLTAGE  = (1 << 5), //extend MSP_SIMULATOR format 2: battery voltage value
+  SIMU_AIRSPEED             = (1 << 6),
+  SIMU_EXTENDED_FLAGS       = (1 << 7), //extend MSP_SIMULATOR format 2: extra flags
+
+  SIMU2_GPS_TIMEOUT         = (1 << 8),
+  SIMU2_PITOT_FAILURE       = (1 << 9)
 } TSimulatorFlags;
 
 //======================================================
@@ -117,6 +133,8 @@ struct TMSPSimulatorToINAV
   //SIMU_EXT_BATTERY_VOLTAGE in format 2
   uint8_t vbat; //126->12.6V
   uint16_t airspeed; //cm/s
+
+  uint8_t flags2; // TSimulatorFlags -  
 };
 #pragma pack()
 
@@ -137,9 +155,33 @@ struct TMSPSimulatorFromINAV
   int16_t estimated_attitude_pitch;
   int16_t estimated_attitude_yaw;
 
-  uint8_t osdRow;  //255 - not osd data. |128 - 16 rows, otherwise 13 rows.
-  uint8_t osdCol;
-  uint8_t osdRowData[200];
+  union {
+
+    struct 
+    {
+      //new response format
+      uint8_t newFormatSignature;  // = 255
+
+      //screen size
+      uint8_t osdRows; //three high bits - format version 
+      uint8_t osdCols; //two high bits - reserved
+
+      //starting position of packet
+      uint8_t osdRow; //three high bits - reserved
+      uint8_t osdCol; //two high bits - reserved
+
+      uint8_t osdRowData[400];
+    } newFormat;
+
+    struct
+    {
+      uint8_t osdRow; 
+      uint8_t osdCol; 
+
+      uint8_t osdRowData[400];
+    } oldFormat;
+
+  };
 };
 #pragma pack()
 
@@ -161,10 +203,13 @@ public:
 	MSP();
   ~MSP();
 
+  TMSPFCVersion version;
+
   typedef void (*TCBConnect)(TCBConnectParm state);
   typedef void(*TCBMessage)(int code, const uint8_t* messageBuffer, int length);
 
   void connect(TCBConnect cbConnect, TCBMessage cbMessage);
+  void connect(TCBConnect cbConnect, TCBMessage cbMessage, const char* ip, int port);
   void disconnect();
   void loop();
 
@@ -181,6 +226,8 @@ private:
     STATE_ENUMERATE_WAIT,
     STATE_CONNECTED,
     STATE_TIMEOUT,
+    STATE_CONNECT_TCP,
+    STATE_CONNECT_TCP_WAIT
   } TState;
 
   TState state = STATE_DISCONNECTED;
@@ -209,12 +256,15 @@ private:
 
   TDecoderState decoderState = DS_IDLE;
 
+  char tcpIp[MAX_PATH];
+  unsigned int tcpPort;
+
   uint32_t lastUpdate;
 
   uint8_t crc8_dvb_s2(uint8_t crc, unsigned char a);
   bool probeNextPort();
 
-  Serial* serial;
+  SerialBase* serial;
   int portId;
   unsigned long probeTime;
   TCBConnect cbConnect;
@@ -231,6 +281,7 @@ private:
   void decode();
   void dispatchMessage(uint8_t expected_checksum);
   void processMessage();
+  bool connectTCP();
 };
 
 extern MSP g_msp;

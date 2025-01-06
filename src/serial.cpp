@@ -14,50 +14,59 @@
 
 //======================================================
 //======================================================
-Serial::Serial(char *portName)
+void Serial::OpenConnection(char *portName)
 {
-	this->connected = false;
-
 #if IBM
-	this->hSerial = CreateFile(portName,
-		GENERIC_READ | GENERIC_WRITE,
-		0,
-		NULL,
-		OPEN_EXISTING,
-		FILE_ATTRIBUTE_NORMAL,
-		NULL);
+  this->hSerial = CreateFile(portName,
+    GENERIC_READ | GENERIC_WRITE,
+    0,
+    NULL,
+    OPEN_EXISTING,
+    FILE_ATTRIBUTE_NORMAL,
+    NULL);
 
-	if (this->hSerial == INVALID_HANDLE_VALUE)
-	{
-		if (GetLastError() == ERROR_FILE_NOT_FOUND)
+  if (this->hSerial == INVALID_HANDLE_VALUE)
+  {
+    if (GetLastError() == ERROR_FILE_NOT_FOUND)
     {
-			LOG("ERROR: Handle was not attached. Reason: %s not available.", portName);
-		}
-		else
-		{
-			LOG("Couldn't connect to COM port, unknown error.");
-		}
-	}
-	else
-	{
-		DCB dcbSerialParams = { 0 };
-		if (!GetCommState(this->hSerial, &dcbSerialParams))
-		{
-			LOG("failed to get current serial parameters!");
-		}
-		else
-		{
-			dcbSerialParams.BaudRate = BAUDRATE;
-			dcbSerialParams.ByteSize = 8;
-			dcbSerialParams.StopBits = ONESTOPBIT;
-			dcbSerialParams.Parity = NOPARITY;
+      LOG("ERROR: Handle was not attached. Reason: %s not available.", portName);
+    }
+    else
+    {
+      LOG("Couldn't connect to COM port, unknown error.");
+    }
+  }
+  else
+  {
+    DCB dcbSerialParams = { 0 };
+    if (!GetCommState(this->hSerial, &dcbSerialParams))
+    {
+      LOG("failed to get current serial parameters!");
+    }
+    else
+    {
+      dcbSerialParams.BaudRate = BAUDRATE;
+      dcbSerialParams.ByteSize = 8;
+      dcbSerialParams.StopBits = ONESTOPBIT;
+      dcbSerialParams.Parity = NOPARITY;
 
-			if (!SetCommState(hSerial, &dcbSerialParams))
-			{
-				printf("  ALERT: Could not set Serial Port parameters\n");
-			}
-			else
-			{
+      // Disable software flow control (XON/XOFF)
+      dcbSerialParams.fOutX = FALSE;
+      dcbSerialParams.fInX = FALSE;
+
+      // Disable hardware flow control (RTS/CTS)
+      dcbSerialParams.fRtsControl = RTS_CONTROL_DISABLE;
+      dcbSerialParams.fDtrControl = DTR_CONTROL_DISABLE;
+
+      // Disable any special processing of bytes
+      dcbSerialParams.fBinary = TRUE;
+
+      if (!SetCommState(hSerial, &dcbSerialParams))
+      {
+        printf("  ALERT: Could not set Serial Port parameters\n");
+      }
+      else
+      {
         COMMTIMEOUTS comTimeOut;
         comTimeOut.ReadIntervalTimeout = MAXDWORD;
         comTimeOut.ReadTotalTimeoutMultiplier = 0;
@@ -66,15 +75,15 @@ Serial::Serial(char *portName)
         comTimeOut.WriteTotalTimeoutConstant = 300;
         SetCommTimeouts(hSerial, &comTimeOut);
 
-				this->connected = true;
-			}
-		}
-	}
-#elif LIN
+        this->connected = true;
+      }
+    }
+  }
+#elif LIN || APL
   this->fd = open(portName, O_RDWR);
   if (fd == -1)
   {
-    LOG("Couldn't connect to COM port %s", portName );
+    LOG("Couldn't connect to COM port %s", portName);
     return;
   }
 
@@ -106,7 +115,7 @@ Serial::Serial(char *portName)
   terminalOptions.c_cc[VMIN] = 0;
   terminalOptions.c_cc[VTIME] = 0;
 
-  int ret = tcsetattr(fd, TCSANOW, &terminalOptions); 
+  int ret = tcsetattr(fd, TCSANOW, &terminalOptions);
   if (ret == -1)
   {
     LOG("Failed to configure device: %s", portName);
@@ -115,23 +124,17 @@ Serial::Serial(char *portName)
 
   this->connected = true;
 #endif
-
-  this->writeBufferCount = 0;
 }
 
 //======================================================
 //======================================================
-Serial::~Serial()
+void Serial::CloseConnection()
 {
-	if (this->connected)
-	{
-		this->connected = false;
 #if IBM
-		CloseHandle(this->hSerial);
-#elif LIN
-    close(this->fd);
+	CloseHandle(this->hSerial);
+#elif LIN || APL
+  close(this->fd);
 #endif
-	}
 }
 
 //======================================================
@@ -139,12 +142,12 @@ Serial::~Serial()
 int Serial::ReadData(unsigned char *buffer, unsigned int nbChar)
 {
 	if (nbChar == 0) return 0;
-	unsigned int toRead;
 
 #if IBM
   COMSTAT status;
   DWORD errors;
   DWORD bytesRead;
+  unsigned int toRead;
 
 	ClearCommError(this->hSerial, &errors, &status);
 	if (status.cbInQue>0)
@@ -158,7 +161,8 @@ int Serial::ReadData(unsigned char *buffer, unsigned int nbChar)
       return bytesRead;
 		}
 	}
-#elif LIN
+  return 0;
+#elif LIN || APL
 
   int bytesRead = read(this->fd, buffer, nbChar);
   g_stats.serialBytesReceived += bytesRead;
@@ -166,36 +170,6 @@ int Serial::ReadData(unsigned char *buffer, unsigned int nbChar)
   return bytesRead;
 
 #endif
-
-	return 0;
-}
-
-//======================================================
-//======================================================
-bool Serial::WriteData(unsigned char *buffer, unsigned int nbChar)
-{
-  if (!this->IsConnected()) return false;
-
-  if (this->writeBufferCount + nbChar < SERIAL_BUFFER_SIZE)
-  {
-    for (unsigned int i = 0; i < nbChar; i++)
-    {
-      this->writeBuffer[this->writeBufferCount++] = *(buffer++);
-    }
-
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-}
-
-//======================================================
-//======================================================
-bool Serial::IsConnected()
-{
-	return this->connected;
 }
 
 //======================================================
@@ -218,7 +192,7 @@ void Serial::flushOut()
     g_stats.serialPacketsSent ++;
 
     this->writeBufferCount = 0;
-#elif LIN
+#elif LIN || APL
     write(this->fd, this->writeBuffer, this->writeBufferCount);
 
     g_stats.serialBytesSent += this->writeBufferCount;
@@ -226,5 +200,16 @@ void Serial::flushOut()
 
     this->writeBufferCount = 0;
 #endif
+  }
+}
+
+//======================================================
+//======================================================
+Serial::~Serial()
+{
+  if (this->connected)
+  {
+    this->CloseConnection();
+    this->connected = false;
   }
 }
