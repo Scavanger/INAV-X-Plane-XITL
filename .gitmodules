@@ -1,3 +1,6 @@
 [submodule "src/libs/mINI"]
 	path = src/libs/mINI
 	url = https://github.com/metayeti/mINI
+[submodule "src/libs/xplane_sdk"]
+	path = src/libs/xplane_sdk
+	url = https://github.com/leecbaker/xplane_sdk
