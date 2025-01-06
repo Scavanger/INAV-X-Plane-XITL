@@ -82,9 +82,5 @@
 #if IBM
 #include <Winsock2.h>
 #include <WS2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
 #endif
 
-
-
-#define HITL_VERSION_STRING "V1.5.0"

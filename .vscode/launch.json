@@ -5,11 +5,11 @@
             "type": "cppdbg",
             "request": "attach",
             // For Liunx, if you want to use VScode with Windows or Mac replace "lin.xpl" with "win.xpl" or "mac.xpl"
-            "program": "${config:xplane.folder}/Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64/lin.xpl",
+            "program": "${config:xplane.folder}/Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64/win.xpl",
             "processId": "${command:pickProcess}",
             // You may want to change the following two lines when using Windows or Mac
             "MIMode": "gdb",
-            "miDebuggerPath": "/usr/bin/gdb",
+            "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe",
             "preLaunchTask": "Build Debug",
             "setupCommands": [
             {

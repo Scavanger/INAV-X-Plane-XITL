@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
-project(plugin VERSION 1.5.0 DESCRIPTION "INAV-X-Plane-HITL-Plugin")
+project(plugin VERSION 1.6.0 DESCRIPTION "INAV-X-Plane-XITL-Plugin")
 
 set(OUTPUT_DIR CACHE STRING "Full path to xplanes plugin directory")
 
@@ -17,7 +17,6 @@ set(PLUGIN_SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(PLUGIN_SOURCES
     ${PLUGIN_SRC_DIR}/main.cpp
     ${PLUGIN_SRC_DIR}/graph.cpp
-    ${PLUGIN_SRC_DIR}/lodepng.cpp
     ${PLUGIN_SRC_DIR}/menu.cpp
     ${PLUGIN_SRC_DIR}/msp.cpp
     ${PLUGIN_SRC_DIR}/osd.cpp
@@ -35,6 +34,9 @@ set(PLUGIN_SOURCES
     ${PLUGIN_SRC_DIR}/fonthdzero.cpp
     ${PLUGIN_SRC_DIR}/fontwtfos.cpp
     ${PLUGIN_SRC_DIR}/ipinputwidget.cpp
+    ${PLUGIN_SRC_DIR}/renderer/osdRenderer.cpp
+    ${PLUGIN_SRC_DIR}/renderer/shader.cpp
+    ${PLUGIN_SRC_DIR}/stb/stbi_image.cpp
 )
 
 include_directories(
@@ -53,12 +55,13 @@ elseif (UNIX)
 
 endif ()
 
-add_definitions(-DXPLM200=1 -DXPLM210=1 -DXPLM300=1 -DXPLM301=1 -DXPLM302=1 -DXPLM303=1)
+add_definitions(-DXPLM200=1 -DXPLM210=1 -DXPLM300=1 -DXPLM301=1 -DXPLM302=1 -DXPLM303=1 -DGLEW_STATIC -DHITL_VERSION_STRING="V${PROJECT_VERSION}")
 add_definitions(-DAPL=$<BOOL:${APPLE}> -DIBM=$<BOOL:${WIN32}> -DLIN=$<AND:$<BOOL:${UNIX}>,$<NOT:$<BOOL:${APPLE}>>>)
 add_compile_options(-fexceptions)
 add_compile_options(-fvisibility=hidden)
 add_compile_options(-Wall -Wpedantic -Wextra)
 add_compile_options(-Wno-unused)
+add_compile_options(-Wno-missing-field-initializers)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(-O3 -fPIC)
@@ -85,6 +88,7 @@ find_package(OpenGL REQUIRED)
 find_library(OPENAL_LIBRARY NAMES openal OpenAL OpenAL32)
 find_library(GLUT_LIBRARY NAMES glut GLUT glut64) 
 find_package(PkgConfig REQUIRED)
+find_package(GLEW REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET "gtk+-3.0")
 
 
@@ -113,7 +117,7 @@ if (APPLE)
 endif ()
 
 if (WIN32)
-    target_link_libraries(plugin -static-libgcc -static-libstdc++ opengl32)
+    target_link_libraries(plugin -static-libgcc -static-libstdc++ wsock32 ws2_32 winmm opengl32 GLEW::glew)
     target_link_libraries(plugin -static)
 elseif (APPLE)
     target_link_libraries(plugin "-exported_symbols_list ${PLUGIN_SRC_DIR}/exports.sym_mac")

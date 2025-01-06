@@ -1,6 +1,6 @@
 #include "shader.h"
 
-#include "util.h"
+#include "../util.h"
 
 Shader::Shader()
 {

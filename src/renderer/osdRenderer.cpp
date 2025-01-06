@@ -1,8 +1,8 @@
 #include "osdRenderer.h"
 
-#include "stb/stb_image.h"
-#include "osd.h"
-#include "util.h"
+#include "../stb/stb_image.h"
+#include "../osd.h"
+#include "../util.h"
 
 const char* vertexShaderSource = R"(
   #version 330 core

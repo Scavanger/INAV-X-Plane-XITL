@@ -4,7 +4,7 @@
 #include "msp.h"
 
 #include "fontbase.h"
-#include "osdRenderer.h"
+#include "renderer/osdRenderer.h"
 
 #include <vector>
 

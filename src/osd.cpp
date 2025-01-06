@@ -1,5 +1,7 @@
 
 
+#include <math.h>
+
 #include "osd.h"
 #include "util.h"
 #include "stats.h"

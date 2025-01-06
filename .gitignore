@@ -1,6 +1,2 @@
-/src/.vs/
-/src/Debug/
-/src/Build/
-/src/Release/
-/src/INAV-X-Plane-HITL-Plugin.vcxproj
-/.vs
+debug
+build
