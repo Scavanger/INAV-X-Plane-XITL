@@ -1,0 +1,6 @@
+[submodule "src/glew"]
+	path = src/glew
+	url = https://github.com/nigels-com/glew/
+[submodule "src/xplane_sdk"]
+	path = src/xplane_sdk
+	url = https://github.com/leecbaker/xplane_sdk
