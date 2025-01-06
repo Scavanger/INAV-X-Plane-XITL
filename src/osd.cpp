@@ -450,7 +450,7 @@ float TOSD::getNoiseAmount()
   float d = latDistanceM(this->home_lattitude, this->home_longitude, this->home_elevation,
     g_simData.lattitude, g_simData.longitude, g_simData.elevation);
 
-  float maxD = 50000;
+  float maxD;
   switch (this->videoLink)
   {
   case VS_2KM:
@@ -459,9 +459,10 @@ float TOSD::getNoiseAmount()
   case VS_10KM:
     maxD = 10000;
     break;
-  case VS_50KM:
+  default:
     maxD = 50000;
     break;
+
   }
 
   float res = d /maxD;
@@ -607,7 +608,7 @@ void TOSD::loadConfig(mINI::INIStructure& ini)
 
   this->activeDigitalFontIndex = this->analogFontsCount;
 
-  for (int i = this->analogFontsCount; i < this->fonts.size(); i++)
+  for (size_t i = this->analogFontsCount; i < this->fonts.size(); i++)
   {
     if (strcmp(this->fonts[i]->name, "Walksnail: INAV_default_36") == 0)
     {
@@ -617,7 +618,7 @@ void TOSD::loadConfig(mINI::INIStructure& ini)
   }
 
   c = ini[SETTINGS_SECTION][SETTINGS_DIGITAL_OSD_FONT].c_str();
-  for (int i = this->analogFontsCount; i < this->fonts.size(); i++)
+  for (size_t i = this->analogFontsCount; i < this->fonts.size(); i++)
   {
     if (strcmp(this->fonts[i]->name, c) == 0)
     {
@@ -671,7 +672,7 @@ void TOSD::addFontsToMenu()
 //==============================================================
 int TOSD::getFontIndexByName(const char* name)
 {
-  for (int i = 0; i < this->fonts.size(); i++)
+  for (size_t i = 0; i < this->fonts.size(); i++)
   {
     if (strcmp(name, this->fonts[i]->name) == 0) return i;
   }

@@ -192,7 +192,7 @@ void TGraph::drawCallback()
 
   for (int i = 0; i < this->activeCount; i++)
   {
-    char msg[100];
+    char msg[331];
     char msg1[100];
     char msg2[100];
 
@@ -349,6 +349,8 @@ void TGraph::setGraphType(TGraphType type)
     this->series[5].setName("debug[5] ");
     this->series[6].setName("debug[6] ");
     this->series[7].setName("debug[7] ");
+    break;
+  default:
     break;
 
   }
