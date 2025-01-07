@@ -113,7 +113,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -GNinja -DOUTPUT_DIR="../release/Aircraft/Extra Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64" ..
+        cmake -GNinja -DCMAKE_APPLE_SILICON_PROCESSOR=arm64 -DOUTPUT_DIR="../release/Aircraft/Extra Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64" ..
         ninja
 
     - name: Upload Artifacts
