@@ -13,7 +13,7 @@ jobs:
     
     defaults:
       run:
-        shell: msys2 {0}
+        shell: powershell
 
     steps:
     - name: Checkout code
