@@ -40,7 +40,7 @@ jobs:
           cd build
           cmake -GNinja -DOUTPUT_DIR="../release/Aircraft/Extra Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64" ..
           ninja
-          
+
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -72,8 +72,33 @@ jobs:
         name: INAV-HITL-Linux
         path: release/**
 
-  build-mac:
+  build-mac-x86:
     runs-on: macos-13
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Install Dependencies
+      run: brew install ninja cmake gtk+3 openal-soft glew
+ 
+    - name: Build the project
+      run: |
+        mkdir build
+        cd build
+        cmake -GNinja -DOUTPUT_DIR="../release/Aircraft/Extra Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64" ..
+        ninja
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: INAV-HITL-Mac
+        path: release/**
+
+  build-mac-arm:
+    runs-on: macos-latest
 
     steps:
     - name: Checkout code
