@@ -18,7 +18,9 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Setup MSYS2
       uses: msys2/setup-msys2@v2
@@ -36,7 +38,7 @@ jobs:
       run: |
           mkdir -p build
           cd build
-          cmake -GNinja -DOUTPUT_DIR="../release/Aircraft/Extra Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64\" ..
+          cmake -GNinja -DOUTPUT_DIR="../release/Aircraft/Extra Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64" ..
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
@@ -49,7 +51,9 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Install dependencies
       run: sudo apt-get update && sudo apt-get -y install -y ninja-build cmake gcc g++ libglew-dev libgl-dev libglu1-mesa-dev libalut-dev libgtk-3-dev pkg-config
@@ -72,7 +76,9 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Install Dependencies
       run: brew install ninja cmake gtk+3 openal-soft glew
