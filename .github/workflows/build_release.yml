@@ -26,8 +26,9 @@ jobs:
       with:
         msystem: UCRT64
         update: true
+        install: >-
+          git
         pacboy: >-
-          git:p
           gcc:p
           cmake:p
           ninja:p 
