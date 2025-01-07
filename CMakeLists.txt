@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.22)
 project(plugin VERSION 1.6.0 DESCRIPTION "INAV-X-Plane-XITL-Plugin")
 
 set(OUTPUT_DIR CACHE STRING "Full path to xplanes plugin directory")
