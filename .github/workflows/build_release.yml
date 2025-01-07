@@ -48,7 +48,7 @@ jobs:
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
         git add "release/Aircraft/Extra Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64/win.xpl"
-        git commit -m "Action - Update win.xpl" -or echo "No changes to commit"
+        git (commit -m "Action - Update win.xpl") -or (echo "No changes to commit")
         git pull origin main --rebase
         git push origin main
       env:
