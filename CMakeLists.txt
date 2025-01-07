@@ -73,6 +73,7 @@ if (APPLE)
     add_compile_options(-Wno-nested-anon-types)
     add_compile_options(-Wno-unused-parameter)
     add_compile_options(-Wno-deprecated-declarations)
+    SET(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
 endif()
 
 add_library(plugin SHARED ${PLUGIN_SOURCES})
