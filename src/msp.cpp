@@ -1,8 +1,8 @@
 #include "msp.h"
 #include "util.h"
 
-#include "serial.h"
-#include "tcpserial.h"
+#include "serial/serial.h"
+#include "serial/tcpserial.h"
 
 #ifdef APL
 #include <iostream>

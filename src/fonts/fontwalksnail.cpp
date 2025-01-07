@@ -1,6 +1,6 @@
 #include "fontwalksnail.h"
 
-#include "util.h"
+#include "../util.h"
 #include <stb_image.h>
 
 #define OSD_CHAR_WIDTH_24 24

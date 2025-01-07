@@ -1,7 +1,7 @@
 #pragma once
 
-#include "config.h"
-#ifdef __linux
+#include "../config.h"
+#if LIN
 #include <sys/types.h>
 #include <fcntl.h>
 #endif

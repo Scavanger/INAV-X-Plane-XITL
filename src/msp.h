@@ -2,7 +2,7 @@
 
 #include "config.h"
 
-#include "serialbase.h"
+#include "serial/serialbase.h"
 
 #define MSP_API_VERSION   1
 #define MSP_FC_VERSION    3

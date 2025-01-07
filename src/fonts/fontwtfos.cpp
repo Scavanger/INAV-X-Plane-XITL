@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#include "util.h"
+#include "../util.h"
 
 #define CHAR_WIDTH			  36
 #define CHAR_HEIGHT			  54

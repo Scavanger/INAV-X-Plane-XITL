@@ -1,6 +1,6 @@
 #pragma once
 
-#include "config.h"
+#include "../config.h"
 
 #define BYTES_PER_PIXEL_RGBA 4
 #define MAX_FONT_NAME MAX_PATH

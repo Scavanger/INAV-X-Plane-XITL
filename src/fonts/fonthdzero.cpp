@@ -1,26 +1,21 @@
+#include "fonthdzero.h"
+
+#include "../util.h"
 #include <stb_image.h>
 
-#include "fontanalog.h"
-#include "util.h"
+#define OSD_CHAR_WIDTH_24 24
+#define OSD_CHAR_HEIGHT_24 36
 
-
-#define FONT_IMAGE_WIDTH   209
-#define FONT_IMAGE_HEIGHT  609
-
-
-#define OSD_CHAR_WIDTH 12
-#define OSD_CHAR_HEIGHT 18
+#define OSD_CHAR_WIDTH_36 36
+#define OSD_CHAR_HEIGHT_36 54
 
 #define CHARS_PER_FONT_ROW 16
 #define CHARS_PER_FONT_COLUMN 32
 #define CHARS_PER_FILE (CHARS_PER_FONT_ROW * CHARS_PER_FONT_COLUMN)
 
-
-//======================================================
-//======================================================
-FontAnalog::FontAnalog(std::filesystem::path path) : FontBase()
+FontHDZero::FontHDZero(std::filesystem::path path)
 {
-  strcpy(this->name, path.filename().replace_extension().string().c_str());
+  strcpy(this->name, ("HDZero: " + path.filename().replace_extension().string()).c_str());
   unsigned int charByteSize = 0, charByteWidth = 0;
   int width, height, channels;
   uint8_t* image = stbi_load(path.string().c_str(), &width, &height, &channels, 0);
@@ -30,25 +25,34 @@ FontAnalog::FontAnalog(std::filesystem::path path) : FontBase()
     return;
   }
 
-  if (width != FONT_IMAGE_WIDTH || height != FONT_IMAGE_HEIGHT)
-  {
+  if ((width != OSD_CHAR_WIDTH_24 * CHARS_PER_FONT_ROW) && (width != OSD_CHAR_WIDTH_36 * CHARS_PER_FONT_ROW)) {
+    LOG("Unexpected font size: %s\n", path);
+    stbi_image_free(image);
+    return;
+  }
+
+  this->charWidth = width / CHARS_PER_FONT_ROW;
+  this->charHeight = height / CHARS_PER_FONT_COLUMN;
+  charByteSize = this->charWidth * this->charHeight * BYTES_PER_PIXEL_RGBA;
+  charByteWidth = this->charWidth * BYTES_PER_PIXEL_RGBA;
+
+  if ((this->charWidth == OSD_CHAR_WIDTH_24) && (this->charHeight != OSD_CHAR_HEIGHT_24)) {
     LOG("Unexpected image size: %s\n", path);
     stbi_image_free(image);
     return;
   }
 
-  this->charWidth = OSD_CHAR_WIDTH;
-  this->charHeight = OSD_CHAR_HEIGHT;
-  charByteSize = this->charWidth * this->charHeight * BYTES_PER_PIXEL_RGBA;
-  charByteWidth = this->charWidth * BYTES_PER_PIXEL_RGBA;
+  if ((this->charWidth == OSD_CHAR_WIDTH_36) && (this->charHeight != OSD_CHAR_HEIGHT_36)) {
+    LOG("Unexpected image size: %s\n", path);
+    stbi_image_free(image);
+    return;
+  }
 
   for (int charIndex = 0; charIndex < CHARS_PER_FILE; charIndex++) {
     std::vector<uint8_t> character(charByteSize);
     int charHeigthIdx = charByteSize - charByteWidth;
-    int imgXIdx = charIndex % CHARS_PER_FONT_ROW;
-    int imgYIdx = charIndex / CHARS_PER_FONT_ROW;
-    int ix = imgXIdx * this->charWidth + imgXIdx + 1; // Border
-    int iy = imgYIdx * this->charHeight + imgYIdx + 1; // Border
+    int ix = (charIndex % CHARS_PER_FONT_ROW) * this->charWidth;
+    int iy = (charIndex / CHARS_PER_FONT_ROW) * this->charHeight;
     for (unsigned int y = 0; y < this->charHeight; y++) {
       for (unsigned int x = 0; x < this->charWidth; x++) {
 
@@ -57,7 +61,7 @@ FontAnalog::FontAnalog(std::filesystem::path path) : FontBase()
         uint8_t g = image[idx + 1];
         uint8_t b = image[idx + 2];
 
-        if (r != 0x80 || g != 0x80 || b != 0x80) {
+        if (r != 0x7f || g != 0x7f || b != 0x7f) {
           int cp = charHeigthIdx + (x * BYTES_PER_PIXEL_RGBA);
           character[cp] = r;
           character[cp + 1] = g;
@@ -70,20 +74,18 @@ FontAnalog::FontAnalog(std::filesystem::path path) : FontBase()
     this->textures.push_back(character);
   }
   stbi_image_free(image);
-
 }
 
-
-int FontAnalog::getCols()
+int FontHDZero::getCols()
 {
-  return 0;
+  return 50;
 }
 
-int FontAnalog::getRows()
+int FontHDZero::getRows()
 {
-  return 0;
+  return 18;
 }
 
-bool FontAnalog::isAnalog() {
-  return true;
+bool FontHDZero::isAnalog() {
+  return false;
 }

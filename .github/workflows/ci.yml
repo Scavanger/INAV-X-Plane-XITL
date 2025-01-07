@@ -12,33 +12,31 @@ on:
 jobs:
   build-windows:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Setup Visual Studio
-      uses: microsoft/setup-msbuild@v1.1
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
       with:
-        vs-version: '15.0'
-
-    - name: Install Visual Studio Build Tools
+        msystem: UCRT64
+        update: true
+        pacboy: >-
+          gcc:p
+          cmake:p
+          ninja:p 
+          gtk3:p
+          glew:p 
+    
+    - name: Build the Project
       run: |
-        choco install visualstudio2017-workload-vctools -y
-        choco install visualstudio2017buildtools -y
-
-    - name: Build solution
-      run: |
-        msbuild src/INAV-X-Plane-HITL-Plugin.sln /p:Configuration=Debug
-
-    - name: Delete win.ilk and  win.pdb
-      run: |
-        if (Test-Path "release\Aircraft\Extra Aircraft\NK_FPVSurfwing\plugins\INAV-X-Plane-HITL\64\win.ilk") {
-          Remove-Item "release\Aircraft\Extra Aircraft\NK_FPVSurfwing\plugins\INAV-X-Plane-HITL\64\win.ilk" -Force
-        }
-        if (Test-Path "release\Aircraft\Extra Aircraft\NK_FPVSurfwing\plugins\INAV-X-Plane-HITL\64\win.pdb") {
-          Remove-Item "release\Aircraft\Extra Aircraft\NK_FPVSurfwing\plugins\INAV-X-Plane-HITL\64\win.pdb" -Force
-        }
+          mkdir -p build
+          cd build
+          cmake -GNinja -DOUTPUT_DIR="../release/Aircraft/Extra Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64\" ..
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
@@ -54,7 +52,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Install dependencies
-      run: sudo apt-get update && sudo apt-get -y install -y ninja-build cmake gcc g++ libgl-dev libglu1-mesa-dev libalut-dev libgtk-3-dev pkg-config
+      run: sudo apt-get update && sudo apt-get -y install -y ninja-build cmake gcc g++ libglew-dev libgl-dev libglu1-mesa-dev libalut-dev libgtk-3-dev pkg-config
 
     - name: Build the project
       run: |
@@ -77,7 +75,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Install Dependencies
-      run: brew install ninja cmake gtk+3 openal-soft
+      run: brew install ninja cmake gtk+3 openal-soft glew
  
     - name: Build the project
       run: |

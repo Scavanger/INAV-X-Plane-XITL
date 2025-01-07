@@ -6,7 +6,7 @@
 #include "osd.h"
 #include "graph.h"
 #include "map.h"
-#include "ipinputwidget.h"
+#include "widgets/ipinputwidget.h"
 
 TMenu g_menu;
 

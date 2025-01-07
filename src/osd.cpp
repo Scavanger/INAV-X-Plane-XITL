@@ -10,10 +10,10 @@
 
 #include "menu.h"
 
-#include "fontanalog.h"
-#include "fontwalksnail.h"
-#include "fonthdzero.h"
-#include "fontwtfos.h"
+#include "fonts/fontanalog.h"
+#include "fonts/fontwalksnail.h"
+#include "fonts/fonthdzero.h"
+#include "fonts/fontwtfos.h"
 
 TOSD g_osd;
 

@@ -1,7 +1,7 @@
 #include "serial.h"
 
-#include "stats.h"
-#include "util.h"
+#include "../stats.h"
+#include "../util.h"
 #include "tcpserial.h"
 
 //======================================================

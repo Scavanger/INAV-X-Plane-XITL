@@ -1,7 +1,7 @@
 #include "serialbase.h"
 
-#include "stats.h"
-#include "util.h"
+#include "../stats.h"
+#include "../util.h"
 
 #if LIN
 #include <fcntl.h> 

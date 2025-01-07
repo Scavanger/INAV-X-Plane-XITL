@@ -20,20 +20,20 @@ set(PLUGIN_SOURCES
     ${PLUGIN_SRC_DIR}/menu.cpp
     ${PLUGIN_SRC_DIR}/msp.cpp
     ${PLUGIN_SRC_DIR}/osd.cpp
-    ${PLUGIN_SRC_DIR}/serialbase.cpp
-    ${PLUGIN_SRC_DIR}/serial.cpp
-    ${PLUGIN_SRC_DIR}/tcpserial.cpp
     ${PLUGIN_SRC_DIR}/simData.cpp
     ${PLUGIN_SRC_DIR}/stats.cpp
     ${PLUGIN_SRC_DIR}/util.cpp
     ${PLUGIN_SRC_DIR}/sound.cpp
     ${PLUGIN_SRC_DIR}/map.cpp
-    ${PLUGIN_SRC_DIR}/fontbase.cpp
-    ${PLUGIN_SRC_DIR}/fontanalog.cpp
-    ${PLUGIN_SRC_DIR}/fontwalksnail.cpp
-    ${PLUGIN_SRC_DIR}/fonthdzero.cpp
-    ${PLUGIN_SRC_DIR}/fontwtfos.cpp
-    ${PLUGIN_SRC_DIR}/ipinputwidget.cpp
+    ${PLUGIN_SRC_DIR}/serial/serialbase.cpp
+    ${PLUGIN_SRC_DIR}/serial/serial.cpp
+    ${PLUGIN_SRC_DIR}/serial/tcpserial.cpp
+    ${PLUGIN_SRC_DIR}/widgets/ipinputwidget.cpp
+    ${PLUGIN_SRC_DIR}/fonts/fontbase.cpp
+    ${PLUGIN_SRC_DIR}/fonts/fontanalog.cpp
+    ${PLUGIN_SRC_DIR}/fonts/fontwalksnail.cpp
+    ${PLUGIN_SRC_DIR}/fonts/fonthdzero.cpp
+    ${PLUGIN_SRC_DIR}/fonts/fontwtfos.cpp
     ${PLUGIN_SRC_DIR}/renderer/osdRenderer.cpp
     ${PLUGIN_SRC_DIR}/renderer/shader.cpp
     ${PLUGIN_SRC_DIR}/libs/stb/stbi_image.cpp
@@ -122,10 +122,10 @@ if (WIN32)
     target_link_libraries(plugin -static-libgcc -static-libstdc++ wsock32 ws2_32 winmm opengl32 GLEW::glew)
     target_link_libraries(plugin -static)
 elseif (APPLE)
-    target_link_libraries(plugin "-exported_symbols_list ${PLUGIN_SRC_DIR}/exports.sym_mac")
+    target_link_libraries(plugin "-exported_symbols_list ${CMAKE_SOURCE_DIR}/exports.sym_mac")
 	target_link_libraries(plugin "-framework XPLM -framework XPWidgets -ldl")
 elseif (UNIX)
-    target_link_libraries(plugin -Wl,--version-script -Wl,${PLUGIN_SRC_DIR}/exports.txt)
+    target_link_libraries(plugin -Wl,--version-script -Wl,${CMAKE_SOURCE_DIR}/exports.txt)
 endif ()
 
 set_target_properties(plugin PROPERTIES PREFIX "")
