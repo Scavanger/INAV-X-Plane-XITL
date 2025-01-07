@@ -5,7 +5,12 @@ on:
 
 jobs:
   build-windows:
+    
     runs-on: windows-latest
+
+    permissions:
+      contents: write
+    
     defaults:
       run:
         shell: msys2 {0}
@@ -47,7 +52,11 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-linux:
+    
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write    
 
     steps:
     - name: Checkout code
@@ -78,6 +87,9 @@ jobs:
 
   build-mac:
     runs-on: macos-13
+
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout code
