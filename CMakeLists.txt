@@ -103,7 +103,7 @@ endif ()
 
 if (UNIX)
     find_library(DL_LIBRARY dl)
-    target_link_libraries(plugin ${DL_LIBRARY} PkgConfig::GTK)
+    target_link_libraries(plugin ${DL_LIBRARY} PkgConfig::GTK GLEW::glew)
 endif ()
 
 if (APPLE)
@@ -113,9 +113,8 @@ if (APPLE)
     find_library(OpenGL_LIBRARY OpenGL)
     find_library(Cocoa_LIBRARY Cocoa)
     find_library(OpenAL_Library OpenAL)
-    find_library(GLEW_Library GLEW::glew)
 
-    target_link_libraries(plugin ${IOKIT_LIBRARY} ${CORE_FOUNDATION_LIBRARY} ${GLUT_LIBRARY} ${GLEW_Library})
+    target_link_libraries(plugin ${IOKIT_LIBRARY} ${CORE_FOUNDATION_LIBRARY} ${GLUT_LIBRARY})
     target_link_libraries(plugin ${OpenGL_LIBRARY} ${Cocoa_LIBRARY} ${OpenAL_Library})
 endif ()
 
