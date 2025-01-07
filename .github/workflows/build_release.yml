@@ -13,7 +13,7 @@ jobs:
     
     defaults:
       run:
-        shell: powershell
+        shell: msys2 {0}
 
     steps:
     - name: Checkout code
@@ -43,6 +43,7 @@ jobs:
           ninja
 
     - name: Commit win.xpl
+      shell: powershell  
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
