@@ -1,4 +1,11 @@
-# INAV X-Plane HITL plugin
+# INAV X-Plane XITL plugin
+
+Fork of https://github.com/RomanLut/INAV-X-Plane-HITL
+
+Latest Changes:
+
+- Use modern OoenGL to render OSD
+- Websocket Server for INAV Webassembly SITL (Online Configurator)
 
 **Hardware-in-the-loop** plugin for **X-Plane 11 & 12** for **INAV Flight Controller firmware**: 
 

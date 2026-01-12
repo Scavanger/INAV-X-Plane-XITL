@@ -3,8 +3,14 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceRoot}",
-                "${workspaceFolder}/src/SDK/CHeaders/**"
+                "${workspaceRoot}/**",
+                "${workspaceRoot}/src/libs/mINI/src/",
+                "${workspaceRoot}/src/libs/GL",
+                "${workspaceRoot}/src/libs/imgui/**",
+                "${workspaceRoot}/src/libs/xsb_public",
+                "${workspaceRoot}/src/libs/stb",
+                "${workspaceFolder}/src/libs/xplane_sdk/sdk/CHeaders/**",
+                "${workspaceFolder}/src/libs/font"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": false,
@@ -15,8 +21,10 @@
             "compilerPath": "/usr/bin/g++",
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
-            "cppStandard": "c++17",
+            "cppStandard": "c++23",
             "defines": [
+                "DEBUG_BUILD",
+                "XITL_VERSION_STRING=\"2.0.0\"",
                 "LIN",
                 "XPLM200",
                 "XPLM210",
@@ -31,10 +39,14 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceRoot}",
+                "${workspaceRoot}/**",
                 "${workspaceRoot}/src/libs/mINI/src/",
+                "${workspaceRoot}/src/libs/GL",
+                "${workspaceRoot}/src/libs/imgui/**",
+                "${workspaceRoot}/src/libs/xsb_public",
                 "${workspaceRoot}/src/libs/stb",
-                "${workspaceFolder}/src/libs/xplane_sdk/sdk/CHeaders/**"
+                "${workspaceFolder}/src/libs/xplane_sdk/sdk/CHeaders/**",
+                "${workspaceFolder}/src/libs/font"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": false,
@@ -45,9 +57,10 @@
             "compilerPath": "C:\\msys64\\ucrt64\\bin\\c++.exe",
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
-            "cppStandard": "c++17",
+            "cppStandard": "c++23",
             "defines": [
-                "HITL_VERSION_STRING=\"2.0.0\"",
+                "DEBUG_BUILD",
+                "XITL_VERSION_STRING=\"2.0.0\"",
                 "IBM",
                 "XPLM200",
                 "XPLM210",

@@ -3,23 +3,44 @@
     "tasks": [
         
         {
-            "label": "CMAKE Build Debug",
+            "label": "CMAKE Build Debug - Linux",
             "type": "shell",
-            "command": "mkdir -p debug && cd debug && cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DOUTPUT_DIR=\"${config:xplane.folder}/Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64\" ..", 
+            "command": "cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DOUTPUT_DIR=\"${config:xplane.folder}/Aircraft/Extra Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64/\" ..", 
             "group": "build",
             "problemMatcher": [],
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}/debug"
             }
         },
         {
-            "label": "CMAKE Build Release",
+            "label": "CMAKE Build Release Linux",
             "type": "shell",
-            "command": "mkdir -p build && cd build && cmake -GNinja -DOUTPUT_DIR=\"${workspaceFolder}/release/Aircraft/Extra Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64\" ..", 
+            "command": "cmake -GNinja -DOUTPUT_DIR=\"${config:xplane.folder}/Aircraft/Extra Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64/\" ..", 
             "group": "build",
             "problemMatcher": [],
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}/release"
+            }
+        },
+         {
+            "label": "CMAKE Build Debug - Windows",
+            "type": "shell",
+            // For Windows you may need to adjust the OUTPUT_DIR path syntax accordingly (/ vs \) and surround OUTPUT_DIR value with '': -DOUTPUT_DIR='\"path\"'
+            "command": "cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DOUTPUT_DIR='\"${config:xplane.folder}\\Aircraft\\Extra Aircraft\\NK_FPVSurfwing\\plugins\\INAV-X-Plane-HITL\\64\"' ..", 
+            "group": "build",
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceFolder}/debug"
+            }
+        },
+        {
+            "label": "CMAKE Build Release WIndows",
+            "type": "shell",
+            "command": "cmake -GNinja -DOUTPUT_DIR='\"${config:xplane.folder}\\Aircraft\\Extra Aircraft\\NK_FPVSurfwing\\plugins\\INAV-X-Plane-HITL\\64\"' ..", 
+            "group": "build",
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceFolder}/release"
             }
         },
         {
