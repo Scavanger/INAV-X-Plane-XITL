@@ -28,6 +28,7 @@ jobs:
         release: true
         update: true
         pacboy: >-  
+          git:p
           gcc:p
           cmake:p 
           ninja:p 
