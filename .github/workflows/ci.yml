@@ -15,13 +15,12 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: msys2 {0}        shell: msys2 {0}
+        shell: msys2 {0}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         submodules: true
-
     - name: Setup MSYS2
       uses: msys2/setup-msys2@v2
       with:
@@ -42,7 +41,14 @@ jobs:
           VERSION=$(grep project CMakeLists.txt | awk '{for(i=1;i<=NF;i++) if($i=="VERSION") print $(i+1)}')
           AIRCRAFT_DIR=${build/out/Aircraft/Extra Aircraft/NK_FPVSurfwing}
           OUTPUT_DIR="${${AIRCRAFT_DIR}/plugins/INAV-X-Plane-XITL/64}
-          echo "OUTPUT_DIR=${OUTPUT_DIR}" >> $GITHUB_ENV
+      run: |
+          COMMIT_ID=${{ github.event.pull_request.head.sha }}
+          COMMIT_ID=${COMMIT_ID:-${{ github.sha }}}
+          BUILD_SUFFIX=ci-$(date '+%Y%m%d')-$(git rev-parse --short ${COMMIT_ID})
+          VERSION=$(grep project CMakeLists.txt | awk '{for(i=1;i<=NF;i++) if($i=="VERSION") print $(i+1)}')
+          AIRCRAFT_DIR=${build/out/Aircraft/Extra Aircraft/NK_FPVSurfwing}
+          OUTPUT_DIR="${${AIRCRAFT_DIR}/plugins/INAV-X-Plane-XITL/64}
+          echo "OUTPUT_DIR=${OUTPUT_DIR}" >> $GITHUB_ENVshell: msys2 {0}
           echo "AIRCRAFT_DIR=${AIRCRAFT_DIR}" >> $GITHUB_ENV
           echo "BUILD_SUFFIX=${BUILD_SUFFIX}" >> $GITHUB_ENV
           echo "BUILD_NAME=INAV-XITL-${VERSION}-${BUILD_SUFFIX}-Linux" >> $GITHUB_ENV
@@ -84,7 +90,6 @@ jobs:
           AIRCRAFT_DIR=${build/out/Aircraft/Extra Aircraft/NK_FPVSurfwing}
 
           OUTPUT_DIR="${${AIRCRAFT_DIR}/plugins/INAV-X-Plane-XITL/64}
-
           echo "OUTPUT_DIR=${OUTPUT_DIR}" >> $GITHUB_ENV
           echo "AIRCRAFT_DIR=${AIRCRAFT_DIR}" >> $GITHUB_ENV
           echo "BUILD_SUFFIX=${BUILD_SUFFIX}" >> $GITHUB_ENV
