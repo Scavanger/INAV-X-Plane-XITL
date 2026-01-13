@@ -15,8 +15,7 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: msys2 {0}
-
+        shell: msys2 {0}        shell: msys2 {0}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -29,6 +28,7 @@ jobs:
         msystem: UCRT64
         update: true
         pacboy: >-  
+          git:p
           gcc:p
           cmake:p 
           ninja:p 
@@ -81,49 +81,10 @@ jobs:
           COMMIT_ID=${COMMIT_ID:-${{ github.sha }}}
           BUILD_SUFFIX=ci-$(date '+%Y%m%d')-$(git rev-parse --short ${COMMIT_ID})
           VERSION=$(grep project CMakeLists.txt | awk '{for(i=1;i<=NF;i++) if($i=="VERSION") print $(i+1)}')
-          AIRCRAFT_DIR="build/out/Aircraft/Extra Aircraft/NK_FPVSurfwing"
-          OUTPUT_DIR="$AIRCRAFT_DIR/plugins/INAV-X-Plane-XITL/64"
-          echo "OUTPUT_DIR=${OUTPUT_DIR}" >> $GITHUB_ENV
-          echo "AIRCRAFT_DIR=${AIRCRAFT_DIR}" >> $GITHUB_ENV
-          echo "BUILD_SUFFIX=${BUILD_SUFFIX}" >> $GITHUB_ENV
-          echo "BUILD_NAME=INAV-XITL-${VERSION}-${BUILD_SUFFIX}-Linux" >> $GITHUB_ENV
-    - name: Prepare Output Directory
-      run: |
-          mkdir -p "${{env.OUTPUT_DIR}}"
-          cp -r aircraft/NK_FPVSurfwing/* "${{env.AIRCRAFT_DIR}}"
-          mkdir -p "${{env.OUTPUT_DIR}}/assets"
-          cp -r src/assets/* "${{env.OUTPUT_DIR}}/assets"
-          mkdir -p "${{env.OUTPUT_DIR}}/shaders"
-          cp -r src/shaders/* "${{env.OUTPUT_DIR}}/shaders"
-    - name: Build the Project
-      run: |
-          cd build
-          cmake -GNinja -DOUTPUT_DIR="../${{env.OUTPUT_DIR}}" ..
-          ninja
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{env.BUILD_NAME}}
-        path: build/out/**
+          AIRCRAFT_DIR=${build/out/Aircraft/Extra Aircraft/NK_FPVSurfwing}
 
-  build-mac:
-    runs-on: macos-latest
+          OUTPUT_DIR="${${AIRCRAFT_DIR}/plugins/INAV-X-Plane-XITL/64}
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: true
-    - name: Install Dependencies
-      run: brew install ninja cmake gtk+3 openal-soft glew
-    - name: Setup Environment Variables
-      run: |
-          COMMIT_ID=${{ github.event.pull_request.head.sha }}
-          COMMIT_ID=${COMMIT_ID:-${{ github.sha }}}
-          BUILD_SUFFIX=ci-$(date '+%Y%m%d')-$(git rev-parse --short ${COMMIT_ID})
-          VERSION=$(grep project CMakeLists.txt | awk '{for(i=1;i<=NF;i++) if($i=="VERSION") print $(i+1)}')
-          AIRCRAFT_DIR="build/out/Aircraft/Extra Aircraft/NK_FPVSurfwing"
-          OUTPUT_DIR="$AIRCRAFT_DIR/plugins/INAV-X-Plane-XITL/64"
           echo "OUTPUT_DIR=${OUTPUT_DIR}" >> $GITHUB_ENV
           echo "AIRCRAFT_DIR=${AIRCRAFT_DIR}" >> $GITHUB_ENV
           echo "BUILD_SUFFIX=${BUILD_SUFFIX}" >> $GITHUB_ENV
