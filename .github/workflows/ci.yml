@@ -28,7 +28,7 @@ jobs:
         release: true
         update: true
         pacboy: >-  
-          git:p
+          mingw-w64-git:p
           gcc:p
           cmake:p 
           ninja:p 
@@ -36,7 +36,7 @@ jobs:
           glew:p 
     - name: Setup Environment Variables
       run: |
-          COMMI COMMIT_ID=${{ github.event.pull_request.head.sha }}
+          COMMIT_ID=${{ github.event.pull_request.head.sha }}
           COMMIT_ID=${COMMIT_ID:-${{ github.sha }}}
           BUILD_SUFFIX=ci-$(date '+%Y%m%d')-$(git rev-parse --short ${COMMIT_ID})
           VERSION=$(grep project CMakeLists.txt | awk '{for(i=1;i<=NF;i++) if($i=="VERSION") print $(i+1)}')
