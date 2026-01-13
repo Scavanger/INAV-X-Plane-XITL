@@ -25,8 +25,9 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         msystem: UCRT64
+        release: true
         update: true
-        install: >-  
+        pacboy: >-  
           git:p
           gcc:p
           cmake:p 
@@ -35,7 +36,7 @@ jobs:
           glew:p 
     - name: Setup Environment Variables
       run: |
-          COMMIT_ID=${{ github.event.pull_request.head.sha }}
+          COMMI COMMIT_ID=${{ github.event.pull_request.head.sha }}
           COMMIT_ID=${COMMIT_ID:-${{ github.sha }}}
           BUILD_SUFFIX=ci-$(date '+%Y%m%d')-$(git rev-parse --short ${COMMIT_ID})
           VERSION=$(grep project CMakeLists.txt | awk '{for(i=1;i<=NF;i++) if($i=="VERSION") print $(i+1)}')
