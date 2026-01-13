@@ -26,7 +26,7 @@ jobs:
       with:
         msystem: UCRT64
         update: true
-        pacboy: >-  
+        install: >-  
           git:p
           gcc:p
           cmake:p 
@@ -41,7 +41,7 @@ jobs:
           VERSION=$(grep project CMakeLists.txt | awk '{for(i=1;i<=NF;i++) if($i=="VERSION") print $(i+1)}')
           AIRCRAFT_DIR=${build/out/Aircraft/Extra Aircraft/NK_FPVSurfwing}
           OUTPUT_DIR="${${AIRCRAFT_DIR}/plugins/INAV-X-Plane-XITL/64}
-          echo "OUTPUT_DIR=${OUTPUT_DIR}" >> $GITHUB_ENVshell:
+          echo "OUTPUT_DIR=${OUTPUT_DIR}" >> $GITHUB_ENV
           echo "AIRCRAFT_DIR=${AIRCRAFT_DIR}" >> $GITHUB_ENV
           echo "BUILD_SUFFIX=${BUILD_SUFFIX}" >> $GITHUB_ENV
           echo "BUILD_NAME=INAV-XITL-${VERSION}-${BUILD_SUFFIX}-Linux" >> $GITHUB_ENV
