@@ -40,10 +40,12 @@ jobs:
           COMMIT_ID=${COMMIT_ID:-${{ github.sha }}}
           BUILD_SUFFIX=ci-$(date '+%Y%m%d')-$(git rev-parse --short ${COMMIT_ID})
           VERSION=$(grep project CMakeLists.txt | awk '{for(i=1;i<=NF;i++) if($i=="VERSION") print $(i+1)}')
-          AIRCRAFT_DIR="build/out/Aircraft/Extra Aircraft/NK_FPVSurfwing"
-          OUTPUT_DIR="${{env.AIRCRAFT_DIR}}/plugins/INAV-X-Plane-XITL/64"
+          AIRCRAFT_DIR=${build/out/Aircraft/Extra Aircraft/NK_FPVSurfwing}
+          OUTPUT_DIR="${${AIRCRAFT_DIR}/plugins/INAV-X-Plane-XITL/64}
+          echo "OUTPUT_DIR=${OUTPUT_DIR}" >> $GITHUB_ENV
+          echo "AIRCRAFT_DIR=${AIRCRAFT_DIR}" >> $GITHUB_ENV
           echo "BUILD_SUFFIX=${BUILD_SUFFIX}" >> $GITHUB_ENV
-          echo "BUILD_NAME=INAV-XITL-${VERSION}-${BUILD_SUFFIX}-Win64" >> $GITHUB_ENV
+          echo "BUILD_NAME=INAV-XITL-${VERSION}-${BUILD_SUFFIX}-Linux" >> $GITHUB_ENV
     - name: Prepare Output Directory
       run: |
           mkdir -p "${{env.OUTPUT_DIR}}"
@@ -80,7 +82,9 @@ jobs:
           BUILD_SUFFIX=ci-$(date '+%Y%m%d')-$(git rev-parse --short ${COMMIT_ID})
           VERSION=$(grep project CMakeLists.txt | awk '{for(i=1;i<=NF;i++) if($i=="VERSION") print $(i+1)}')
           AIRCRAFT_DIR="build/out/Aircraft/Extra Aircraft/NK_FPVSurfwing"
-          OUTPUT_DIR="${{env.AIRCRAFT_DIR}}/plugins/INAV-X-Plane-XITL/64"
+          OUTPUT_DIR="$AIRCRAFT_DIR/plugins/INAV-X-Plane-XITL/64"
+          echo "OUTPUT_DIR=${OUTPUT_DIR}" >> $GITHUB_ENV
+          echo "AIRCRAFT_DIR=${AIRCRAFT_DIR}" >> $GITHUB_ENV
           echo "BUILD_SUFFIX=${BUILD_SUFFIX}" >> $GITHUB_ENV
           echo "BUILD_NAME=INAV-XITL-${VERSION}-${BUILD_SUFFIX}-Linux" >> $GITHUB_ENV
     - name: Prepare Output Directory
@@ -119,9 +123,11 @@ jobs:
           BUILD_SUFFIX=ci-$(date '+%Y%m%d')-$(git rev-parse --short ${COMMIT_ID})
           VERSION=$(grep project CMakeLists.txt | awk '{for(i=1;i<=NF;i++) if($i=="VERSION") print $(i+1)}')
           AIRCRAFT_DIR="build/out/Aircraft/Extra Aircraft/NK_FPVSurfwing"
-          OUTPUT_DIR="${{env.AIRCRAFT_DIR}}/plugins/INAV-X-Plane-XITL/64"
+          OUTPUT_DIR="$AIRCRAFT_DIR/plugins/INAV-X-Plane-XITL/64"
+          echo "OUTPUT_DIR=${OUTPUT_DIR}" >> $GITHUB_ENV
+          echo "AIRCRAFT_DIR=${AIRCRAFT_DIR}" >> $GITHUB_ENV
           echo "BUILD_SUFFIX=${BUILD_SUFFIX}" >> $GITHUB_ENV
-          echo "BUILD_NAME=INAV-XITL-${VERSION}-${BUILD_SUFFIX}-MacOS" >> $GITHUB_ENV
+          echo "BUILD_NAME=INAV-XITL-${VERSION}-${BUILD_SUFFIX}-Linux" >> $GITHUB_ENV
     - name: Prepare Output Directory
       run: |
           mkdir -p "${{env.OUTPUT_DIR}}"
