@@ -28,12 +28,14 @@ jobs:
         release: true
         update: true
         pacboy: >-  
-          git:p
           gcc:p
           cmake:p 
           ninja:p 
           gtk3:p
-          glew:p 
+          glew:p
+    - name: Install Git
+      shell: msys2 {0}
+      run: pacman -S --noconfirm git 
     - name: Setup Environment Variables
       run: |
           COMMIT_ID=${{ github.event.pull_request.head.sha }}
