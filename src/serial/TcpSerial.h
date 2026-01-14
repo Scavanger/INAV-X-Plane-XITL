@@ -4,7 +4,7 @@
 
 #include "SerialBase.h"
 
-#ifndef SOCKET
+#if LIN
   typedef int SOCKET;
 #endif
 
