@@ -142,7 +142,6 @@ jobs:
           name: ${{ needs.parse-tag.outputs.release-name }}
           body: ${{ steps.read-notes.outputs.content }}
           prerelease: ${{ needs.parse-tag.outputs.is-prerelease }}
+          token: ${{ secrets.RELEASE_TOKEN }}
           files: |
             INAV-XITL-*.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
