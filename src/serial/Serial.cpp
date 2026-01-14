@@ -55,7 +55,6 @@ void Serial::OpenConnection(std::string &connectionString)
             // Disable software flow control (XON/XOFF)
             dcbSerialParams.fOutX = FALSE;
             dcbSerialParams.fInX = FALSE;
-OpenConnection
             // Disable hardware flow control (RTS/CTS)
             dcbSerialParams.fRtsControl = RTS_CONTROL_DISABLE;
             dcbSerialParams.fDtrControl = DTR_CONTROL_DISABLE;
@@ -63,7 +62,7 @@ OpenConnection
             // Disable any special processing of bytes
             dcbSerialParams.fBinary = TRUE;
 
-            if (!SetCommState(hSerial, &dcbSerialParams))OpenConnection
+            if (!SetCommState(hSerial, &dcbSerialParams))
             {
                 throw std::runtime_error("Could not set Serial Port parameters");
             }
@@ -77,7 +76,7 @@ OpenConnection
                 comTimeOut.WriteTotalTimeoutConstant = 300;
                 SetCommTimeouts(hSerial, &comTimeOut);
 
-                this->connected = true;OpenConnection
+                this->connected = true;
             }
         }
     }

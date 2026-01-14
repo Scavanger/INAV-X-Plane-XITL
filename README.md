@@ -1,24 +1,66 @@
 # INAV X-Plane XITL plugin
 
-Fork of https://github.com/RomanLut/INAV-X-Plane-HITL
+## XITL - HITL (Hardware) and SITL (Software) in the loop for INAV
 
-Latest Changes:
 
-- Use modern OoenGL to render OSD
-- Websocket Server for INAV Webassembly SITL (Online Configurator)
+Since the original X-Plane HITL plugin appears to be no longer in development, we are continuing here.
+Name change to XITL to make it clear that HITL and SITL connections are supported equally.
 
-**Hardware-in-the-loop** plugin for **X-Plane 11 & 12** for **INAV Flight Controller firmware**: 
+New features and improvements in version 2.0:
 
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/krTDi1tXGX8/0.jpg)](https://www.youtube.com/watch?v=krTDi1tXGX8)
+#### OSD
+- New shader-based rendering to prevent artifacts
+- Support for the latest “side-by-side” HD fonts
+- Current hi-res fonts from [SneakyFPV](https://sites.google.com/view/sneaky-fpv) for DJI and Avatar OSD
+- The OSD type is automatically detected and fonts can be set separately for each system
+  
+#### UI
+- New, clearer menu and new settings dialog
+- Voice output replaced with on-screen messages
+- HD font as standard for on-screen messages
 
-**Hardware-in-the-loop (HITL) simulation**, is a technique that is used in the development and testing of complex real-time embedded systems. 
+#### SITL/HITL
+- Rangefinder sensor with 10 m range
+- Simulation of a drive train (Lipo/Lion battery with different capacities and motor/propeller for realistic voltage and current)
+- Simulation of the reception strength (RSSI) of a virtual receiver
+- Failsafe simulation
 
+#### HITL
+- Option to use the USB transmitter/joystick connected to X-Plane
+- Option to set the serial port manually
+- Linux: Connection can also be established via `/dev/USBX` devices (“real” USB-serial adapters).
+  
+#### SITL
+- Communication with SITL revised to avoid setting values twice 
+
+#### General
+- Add option to reboot INAV
+- Internal code refactoring
+
+### INAV
+To use the new features, changes to INAV are necessary. Until the changes are included in the official INAV release, a patched INAV 9 version can be downloaded here: https://github.com/Scavanger/INAV-XITL-Firmware
+
+### MacOS
+Unfortunately, I don't have a Mac, so I can't test the plugin here, which means there won't be a release for the time being.
+
+If anyone feels up to the task, they are welcome to create a pull request. The code already contains defines and a cmake file for Mac, but as I said, it is untested. 
+
+## General
+
+**Hardware/Software-in-the-loop** plugin for **X-Plane 11 & 12** for **INAV Flight Controller firmware**: 
+
+**Hardware/Software-in-the-loop (HITL/SITL) simulation**, is a technique that is used in the development and testing of complex real-time embedded systems. https://github.com/Scavanger/INAV-XITL-Firmware
+d testing of complex real-time embedded systems. 
 **X-Plane** is a flight simulation engine series developed and published by Laminar Research https://www.x-plane.com/
 
-**INAV-X-Plane-HITL** is plugin for **X-Plane** for testing and developing **INAV flight controller firmware** https://github.com/iNavFlight/inav.
+**INAV X-Plane XITL** is plugin for **X-Plane** for testing and developing **INAV flight controller firmware** https://github.com/iNavFlight/inav.
 
 
-# Motivation
+## Open to collaboration
+
+Anyone who has ideas, bug fixes, or features is welcome to collaborate and create pull requests.
+
+## Motivation
 
 I believe that good testing and debugging tools are key points to achieve software stability.
 
@@ -26,11 +68,23 @@ It is not Ok when people debug autopilot by running with RC Plane on the field :
 
 I hope this plugin can help to improve INAV firmware.
 
-While not been a main purpose, plugin can be used to improve pilot skils or getting familiar with INAV settings.
+While not 
+**Hardware/Software-in-the-loop** plugin for **X-Plane 11 & 12** for **INAV Flight Controller firmware**: 
 
-# How it works
+**Hardware/Software-in-the-loop (HITL/SITL) simulation**, is a technique that is used in the development and testing of complex real-time embedded systems. 
 
-![](doc/x-plane-logo.png) 
+**X-Plane** is a flight simulation engine series developed and published by Laminar Research https://www.x-plane.com/
+
+**INAV X-Plane XITL** is plugin for **X-Plane** for testing and developing **INAV been a main purpose, plugin can be used to improve pilot skils or getting familiar with INAV settings.
+
+#
+**Hardware/Software-in-the-loop** plugin for **X-Plane 11 & 12** for **INAV Flight Controller firmware**: 
+
+**Hardware/Software-in-the-loop (HITL/SITL) simulation**, is a technique that is used in the development and testing of complex real-time embedded systems. 
+
+**X-Plane** is a flight simulation engine series developed and published by Laminar Research https://www.x-plane.com/
+
+**INAV X-Plane XITL** is plugin for **X-Plane** for testing and developing **INAV ![](doc/img/x-plane-logo.png) 
 
 **X-Plane** https://www.x-plane.com/ is flight simulator with accurate physics simulation. 
  
@@ -46,6 +100,14 @@ While **X-Plane 12** has better visual appearance, **X-Plane 11** is still recom
 
 Also, small aircraft physics seems to work better in X-Plane 11.
 
+### X-Plane 11 and modern Linux distributions
+
+X-Plane 11 (or rather the network subsystem) no longer works on modern Linux systems with kernel > 6.9: https://www.x-plane.com/kb/fixing-x-plane-11-getting-stuck-on-will-init-net-on-linux/
+
+This breaks the XITL plugin. A patch/workaround can be found here: https://github.com/datafl4sh/xpfix
+
+If you cannot or do not want to compile it yourself, here is a pre-compiled version: [xpfix.so](/doc/extra/xpfix.so)
+
 # Setup and usage
 
 See [setup.md](doc/setup.md)
@@ -58,9 +120,10 @@ See [development.md](doc/development.md)
 
 Many thanks to:
 - Sergii Sevriugin for initial implementation and a lot of testing
+- Roman Lut, original Autor
+- SneakyFPV for HD fonts
 - NKDesign for NK FPV SurfWing RC plane for X-Plane
 - b14ckyy for Surfwing 3D model
-- Scavanger for HD OSD and SITL integration
 - Bart Slinger for MacOs plugin compilation
 
 

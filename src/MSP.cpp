@@ -236,7 +236,7 @@ bool MSP::probeNextPort()
         {
             return false;
         }
-        std::string connectionString = "\\\\.\\COM" + std::to_string(portID);
+        connectionString = "\\\\.\\COM" + std::to_string(portID);
 #elif LIN
         if (this->probeTtyUSB)
         {
@@ -395,7 +395,7 @@ void MSP::decode()
     {
         this->lastUpdate = Utils::GetTicks();
     }
-    else if (Utils::GetTicks() > this->lastUpdate + (Utils::IsDebuggerPresent() ? MSPConstants::MSP_COMM_DEBUG_TIMEOUT_MS : MSPConstants::MSP_COMM_TIMEOUT_MS))
+    else if (Utils::GetTicks() > this->lastUpdate + (Utils::IsDebuggerAttached() ? MSPConstants::MSP_COMM_DEBUG_TIMEOUT_MS : MSPConstants::MSP_COMM_TIMEOUT_MS))
     {
         this->state = STATE_TIMEOUT;
         this->disconnect();

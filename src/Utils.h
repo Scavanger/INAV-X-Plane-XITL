@@ -19,6 +19,7 @@
 #include <dlfcn.h>
 #include <gtk/gtk.h>
 #include <arpa/inet.h>
+#include <sys/ptrace.h>
 #endif
 
 #if APL
@@ -146,14 +147,16 @@ namespace Utils
 #endif
     }
 
-#if LIN || APL
-
-    static bool IsDebuggerPresent()
+    static bool IsDebuggerAttached()
     {
+#if LIN || APL
+        return ptrace(PTRACE_TRACEME, 0, 1, 0) == -1;
+#elif IBM
+        return IsDebuggerPresent();
+#else
         return false;
-    }
-
 #endif
+    }
 
     static uint32_t GetTicks()
     {

@@ -1,0 +1,147 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'V-*'
+      - 'Beta-*'
+
+jobs:
+  parse-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.parse.outputs.version }}
+      is-prerelease: ${{ steps.parse.outputs.is-prerelease }}
+      beta-version: ${{ steps.parse.outputs.beta-version }}
+      release-name: ${{ steps.parse.outputs.release-name }}
+    steps:
+      - name: Parse Tag
+        id: parse
+        run: |
+          TAG="${{ github.ref_name }}"
+          
+          if [[ $TAG =~ ^V-([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            # Release tag format: V-major.minor.patch
+            VERSION="${BASH_REMATCH[1]}"
+            IS_PRERELEASE="false"
+            BETA_VERSION=""
+            RELEASE_NAME="INAV-XITL-${VERSION}"
+          elif [[ $TAG =~ ^Beta-([0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)$ ]]; then
+            # Pre-release tag format: Beta-major.minor.patch-betaVersion
+            VERSION="${BASH_REMATCH[1]}"
+            BETA_VERSION="${BASH_REMATCH[2]}"
+            IS_PRERELEASE="true"
+            RELEASE_NAME="INAV-XITL-${VERSION}-Beta-${BETA_VERSION}"
+          else
+            echo "Invalid tag format: $TAG"
+            exit 1
+          fi
+          
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "is-prerelease=${IS_PRERELEASE}" >> $GITHUB_OUTPUT
+          echo "beta-version=${BETA_VERSION}" >> $GITHUB_OUTPUT
+          echo "release-name=${RELEASE_NAME}" >> $GITHUB_OUTPUT
+
+  download-artifacts:
+    needs: parse-tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Find Latest CI Run
+        id: find-run
+        run: |
+          # Get the latest successful CI workflow run on main branch
+          RUNS=$(gh run list --branch main --workflow ci.yml --status success --json databaseId,createdAt --limit 1)
+          
+          if [ -z "$RUNS" ]; then
+            echo "No successful CI runs found"
+            exit 1
+          fi
+          
+          RUN_ID=$(echo "$RUNS" | jq -r '.[0].databaseId')
+          echo "run-id=${RUN_ID}" >> $GITHUB_OUTPUT
+          echo "Found CI run: ${RUN_ID}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download Windows Artifact
+        run: |
+          gh run download ${{ steps.find-run.outputs.run-id }} --dir ./artifacts-win --pattern "*Windows*" --repo ${{ github.repository }}
+          echo "Downloaded Windows artifact"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download Linux Artifact
+        run: |
+          gh run download ${{ steps.find-run.outputs.run-id }} --dir ./artifacts-linux --pattern "*Linux*" --repo ${{ github.repository }}
+          echo "Downloaded Linux artifact"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release Assets
+        id: create-assets
+        run: |
+          RELEASE_NAME="${{ needs.parse-tag.outputs.release-name }}"
+          
+          # Create Windows ZIP - zip the contents directly without nested structure
+          WIN_ARTIFACT=$(find ./artifacts-win -maxdepth 2 -type d -name "Aircraft" | head -1 | xargs dirname)
+          if [ -z "$WIN_ARTIFACT" ]; then
+            WIN_ARTIFACT=$(find ./artifacts-win -maxdepth 1 -type d ! -name "." ! -name ".." | head -1)
+          fi
+          cd "$WIN_ARTIFACT"
+          zip -r "../../${RELEASE_NAME}-Windows.zip" . -x ".*"
+          cd - > /dev/null
+          
+          # Create Linux ZIP - zip the contents directly without nested structure
+          LINUX_ARTIFACT=$(find ./artifacts-linux -maxdepth 2 -type d -name "Aircraft" | head -1 | xargs dirname)
+          if [ -z "$LINUX_ARTIFACT" ]; then
+            LINUX_ARTIFACT=$(find ./artifacts-linux -maxdepth 1 -type d ! -name "." ! -name ".." | head -1)
+          fi
+          cd "$LINUX_ARTIFACT"
+          zip -r "../../${RELEASE_NAME}-Linux.zip" . -x ".*"
+          cd - > /dev/null
+          
+          echo "Windows asset: ${RELEASE_NAME}-Windows.zip"
+          echo "Linux asset: ${RELEASE_NAME}-Linux.zip"
+
+      - name: Upload Assets as Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-assets
+          path: |
+            INAV-XITL-*.zip
+
+  create-release:
+    needs: [parse-tag, download-artifacts]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Release Assets
+        uses: actions/download-artifact@v4
+        with:
+          name: release-assets
+
+      - name: Read Release Notes
+        id: read-notes
+        run: |
+          NOTES=$(cat ReleaseNotes.md)
+          # Escape newlines for GitHub Actions
+          NOTES="${NOTES//'%'/'%25'}"
+          NOTES="${NOTES//$'\n'/'%0A'}"
+          NOTES="${NOTES//$'\r'/'%0D'}"
+          echo "content=${NOTES}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ needs.parse-tag.outputs.release-name }}
+          body: ${{ steps.read-notes.outputs.content }}
+          prerelease: ${{ needs.parse-tag.outputs.is-prerelease }}
+          token: ${{ secrets.RELEASE_TOKEN }}
+          files: |
+            INAV-XITL-*.zip
