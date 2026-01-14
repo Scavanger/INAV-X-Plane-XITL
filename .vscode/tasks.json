@@ -13,7 +13,7 @@
             }
         },
         {
-            "label": "CMAKE Build Release Linux",
+            "label": "CMAKE Build Release - Linux",
             "type": "shell",
             "command": "cmake -GNinja -DOUTPUT_DIR=\"${config:xplane.folder}/Aircraft/Extra Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64/\" ..", 
             "group": "build",
@@ -34,7 +34,7 @@
             }
         },
         {
-            "label": "CMAKE Build Release WIndows",
+            "label": "CMAKE Build Release - Windows",
             "type": "shell",
             "command": "cmake -GNinja -DOUTPUT_DIR='\"${config:xplane.folder}\\Aircraft\\Extra Aircraft\\NK_FPVSurfwing\\plugins\\INAV-X-Plane-HITL\\64\"' ..", 
             "group": "build",

@@ -1,22 +1,19 @@
 # Development
 
-# Building for Windows
+## Build Environment Windows
 
-Build with Microsoft Visual Studio 2017.
+In Windows MSYS2, URCTR64 is used.
+Install MSYS2 from https://www.msys2.org/
 
-# Building for Linux
+In the UCRT64 shell, install the prerequisites:
+```
+pacman --Syu
+pacman -S gcc cmake ninja mingw-w64-ucrt-x86_64-glew mingw-w64-ucrt-x86_64-gtk3
+```
 
-Check Dockerfile for building requirements on Linux https://github.com/RomanLut/INAV-X-Plane-HITL/blob/main/Dockerfile
-
-Can be built on Windows using docker:
-
-```docker build -t inav-hitl-build  .```
-
-```docker run --rm -it -u root -v //d/Github/inav/INAV-X-Plane-HITL-Plugin/INAV-X-Plane-HITL/:/trunk inav-hitl-build ```
-
-# Building in Linux
+## Build Environment Linux
  
-## Command line
+### Command line
 
 Installation of the prerequisites (Debian, Ubuntu and Co.):
 ```shell
@@ -24,7 +21,8 @@ Installation of the prerequisites (Debian, Ubuntu and Co.):
  sudo apt-get install ninja-build cmake gcc g++ libgl-dev libglu1-mesa-dev libalut-dev libgtk-3-dev pkg-con
 ``` 
 
-Building:
+## Building:
+
 ```shell
 mkdir build
 cd build
@@ -44,14 +42,14 @@ make
 
 Some predefined tasks are avaiable, use `STRG-Shift-B` to execute the Tasks;
 
-| Task                  | Description                                                                                                                       |
-|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------|
-|`CMAKE Build Release`: | Prepares a `build` directory for a release build                                                                                  | 
-|`CMAKE Build Debug`:   | Prepares a `debug` directory for a debug build                                                                                    |
-|`CMAKE Build Release`: | Builds a release build and copies the plugin library to the `release` folder                                                      |
-|`CMAKE Build Debug`:   | Builds a debug build and copies the plugin library to the X-Plane folder, edit `setting.json` before, see "Debugging" section.    |
-|`Clean Release`:       | Cleans up the build folder                                                                                                        |
-|`Clean Debug`:         | Cleans up the debug folder                                                                                                        |
+| Task                                  | Description                                                                                                                       |
+|---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+|`CMAKE Build Release - Windows/Linux`: | Prepares a `release` directory for a release build                                                                                  | 
+|`CMAKE Build Debug - Windows/Linux`:   | Prepares a `debug` directory for a debug build                                                                                    |
+|`CMAKE Build Release`:                 | Builds a release build and copies the plugin library to the `release` folder                                                      |
+|`CMAKE Build Debug`:                   | Builds a debug build and copies the plugin library to the X-Plane folder, edit `setting.json` before, see "Debugging" section.    |
+|`Clean Release`:                       | Cleans up the build folder                                                                                                        |
+|`Clean Debug`:                         | Cleans up the debug folder                                                                                                        |
 
 # Concerns
 
@@ -81,11 +79,7 @@ To avoid restarting X-Plane every time, download, build and install this plugin:
 Select in X-PLane: Plugins -> ReloadPlugins -> Reload.
 All plugins will now be unloaded.
 
-### Windows / Visual Studio:
-Set the path to the HITL plugin under Project Properties -> Build -> Events -> Post-Build Event
-Start debugging with Debug -> Attach to Process, and select the X-Plane process
-
-### Linux/VSCode:
+### VSCode:
 Set the path to the HITL plugin in  `.vscode/settings.json`
 Start debugging with Run and Debug -> Attach to X-Plane (or just hit F5).
 
@@ -130,13 +124,9 @@ Check inav sources `main\build\debug.h', 'debugType_e` for more modes.
 
 INAV serial logging ( see https://github.com/iNavFlight/inav/blob/master/docs/development/serial_printf_debugging.md ) messages are output to Developer console with "INAVHITL: " prefix:
 
-![](devconsole.png)
-
 *Note: Please keep rate below ~100 characters per second, otherwise FC will freeze. For high frequencly output, use debug[] array.* 
 
 ## Graphs
-
-![](graph.jpg)
 
 Plugin can draw a number of graphs for debugging:
 - **Updates period:** First graph shows period between updates from FC in ms. Second graph shows number of updates per second.

@@ -2,15 +2,13 @@
 
 Plugin is **Aircraft** plugin.
 
-The contents of `release\Aircraft` folder should be placed in the Aircraft folder of X-Plane: `X-Plane11\Aircraft\`.
+The contents of the zip file should be placed  in the root of the X-Plane folder, e.g: `{MySteamLibrary}/steamapps/common/X-Plane 11` 
 
 This action will add **INAV Surfwing** flying wing model with this plugin.
 
-**IMPORTANT: You have to flash Simulator-enabled INAV firmware. Simulator is supported since INAV 6.**
+**IMPORTANT: You have to flash Simulator-enabled INAV firmware. XITL Version 2.0 needs INAV 9 with Simulation V3 patches.**
 
-**Also precompiled binaries of inav 5.0.0 with simulator support are available in early releases of plugin: https://github.com/RomanLut/INAV-X-Plane-HITL/releases/.**
-
-![](menu.png)
+**Also precompiled binaries of inav 9.0.0 with simulator V3 support are available here: https://github.com/Scavanger/INAV-XITL-Firmware**
 
 ## Installation steps
 
@@ -22,17 +20,16 @@ This action will add **INAV Surfwing** flying wing model with this plugin.
 - Configure FC (see **Flight Controller configuration** below)
 - Start **X-Plane 11**
 - Set **Settings->General->Flight models per frame** to **10** for better support of small aircrafts
-![](flight_models.png)
+![](img/flight_models.png)
 - Select **"Show extra aircraft from older versions"** to see **INAV Surfwing**
-![](show_extra_aircraft.jpg)
+![](img/show_extra_aircraft.jpg)
 - Select **INAV Surfwing**, start flight
 - When scenery is loaded, select **Plugins->INAV HITL->Link->Connect to Flight Controller**. Plugin should automatically detect serial port.
 - Flight using RC Controller, setup PIDs etc. 
 
-
 *Note: Use **"Internal View/Forward with No Display"** for full immersion FPV flights:*
 
-![](internalview.png)
+![](img/internalview.png)
 
 # Setup (Linux)
 
@@ -40,15 +37,11 @@ This action will add **INAV Surfwing** flying wing model with this plugin.
  
  Make sure you have OpenAL library installed; otherwise run **sudo apt install libopenal1**
 
-# Setup (MacOs)
-
-For MacOs, all steps are analogous to Windows.
-
 # Flight controller configuration
 
 The flight controller should be fully configured as it would be for a real flight. There is no need to configure mixer and motors output.
 
-Configure **Platform type: Flying wing** for **INAV Sufwing** in **INAV Configurator**. 
+Configure **Platform type: Airplane with a tail** for **INAV Sufwing** in **INAV Configurator**. 
 
 It is possible to use plugin with any other airplane (copy HITL plugin from `NK_FRVSurfWing\plugins\INAV-X-Plane-HITL` to corresponding Aircraft subfolder of other airplane).
 
@@ -70,10 +63,8 @@ In minimal case, you need FC with some kind of receiver attached.
 
 No real barometer and GPS sensors are required. 
 
-![](attitude.png)
-
 There are two modes of simulation:
-- **simplified simulation:** attitude is passed from X-Plane.
+- **simplified simulation:** attitude is passed from X-Plane (highly recommended).
 - **full simulation:** attitude is estimated from sensors data
 
 Due to slow update rate (update rate can not be larger then X-Plane FPS) and no synchronization beetween INAV cycles and **X-Plane** FPS, full emulation mode will show noticeable problems with estimation ( drifting horizon ). **Simplified emulation is recommended for debugging code not related to IMU**.
@@ -88,7 +79,7 @@ There is no need to calibrate acceleromerer. Accelerometer orientation settings 
 
 Barometer will be simulated if enabled in **INAV Configurator**. If real barometer is not present, select **"FAKE"** type.
 
-![](fakebaro.png)
+![](img/fakebaro.png)
 
 ## GPS
 
@@ -96,25 +87,17 @@ GPS functionality will be emulated if enabled in **INAV Configurator**. It is no
 
 X-Plane simulated world is build based on real world map data. GPS coordinates in game correspond to real locations. 
 
-Simulated GPS Fix can be switched in menu:
-
-![](gpsfix.png)
-
 ## Magnetometer
 
 Magnetometer is simulated if selected in INAV configurator. It is not required to connect real sensor. Select QMC5883 if there is no real sensor present. Calibration is not required.
 
-## Battery sensor
+## Battery / Current sensor
 
-For convience, it is possible to simulate 3S battery presense:
+A complete drive system based on a T-Motor AT2312 1400 KV is simulated on an APC 8x6 propeller with Lipo or Lion batteries of various capacities for realistic voltage and amperage readings.
+If the battery voltage falls below 3.2 V per cell for Lipos, or 2.8 V for Lions, the motor is shut down (cutoff simulation).
+The loss of power due to decreasing battery voltage is also simulated, as well as the voltage drop at high motor power.
 
-- infinite 3s battery
-- discharged 3s battery
-- a battery which lasts a period of time on full throtle, 2x time on 50% throtle etc.
-
-![](battery.png)
-
-*Select voltage meter type: "FAKE" in configurator*
+Configure FAKE sensors for voltage and current. 
 
 ## Pitot
 
@@ -126,17 +109,47 @@ It is possible to use VIRTUAL pitot device.
 
 *Virtual pitot measurements will be overwritten by simulator if emulation is selected in the menu. Otherwise, virtual pitot will estimate speed as usual.*
 
-*Note: VIRTUAL pitot is not supported on 411 and 722 CPUs in INav 5.x and 6.x - you will not be able to arm.*
 
 *Note: VIRTUAL pitot will fail initialize if GPS sensor is disabled in configuration.*
+
+## Rangefinder
+
+A rangefinder sensor with 10 meter range is simulates, if enabeld.
+
+Confire FAKE rangefinder sensor in INAV.
+
+# Controller
+The controller connected and configured in X-Plane can also be used with HITL.
+
+In the settings, calibrate the joystick, set it up and assign the axes as follows:
+
+| INAV | X-Plane |
+|------|---------|
+| Roll | Roll |
+| Pitch | Pitch |
+| Throttle | Cowl Flap 1 |
+| Yaw | Yaw |
+| Channel 5 | Cowl Flap 2 |
+| Channel 6 | Cowl Flap 3 |
+| Channel 7 | Cowl Flap 4 |
+| Channel 8 | Cowl Flap 5 |
+
+Configure the receiver type as ‘SIM (SITL)’ in INAV.
+Yes, that should still be changed in the INAV Configurator ;)
+
+## RSSI
+
+When selected in the menu, the range of the virtual receiver is simulated and an RSSI value is calculated. If RSSI falls below 30, a failsafe is triggered.
+
+## Failsafe
+
+Failsafe can be manually triggered or switched at any time via the menu for testing purposes.
 
 # OSD 
 
 OSD is rendered in **X-Plane** exactly as configured in **INAV Configurator**. 
 
-![](osd.jpg)
-
-Both **Analog OSD** and **HD OSD** are supported (HD OSD requires Plugin v1.4.0 and INav 7.0)
+Both **Analog OSD** and **HD OSD** are supported
 
 The following requirements should be met to have **analog OSD** drawn in **X-Plane**:
 
@@ -152,44 +165,21 @@ The following requirements should be met to have **HD OSD** drawn in **X-Plane**
 - OSD should be enabled in "Configuration->Other features->OSD" in **INAV Configurator**.
 - `MSP Displayport` peripheral should be chosen on any UART.
 
-The following options are present in menu:
-
-![](osdoptions.png) 
-
-- **AUTO:** number of analog OSD lines is provided by FC
-- **PAL:** force rendering of 16 OSD lines (analog OSD) 
-- **NTSC:** force rendering of 13 OSD lines (analog OSD)
-- **Smoothing: Nearest:** Use nearest pixels for characters rendering
-- **Smoothing: Linear:** Use linear smoothing for characters rendering
+The OSD type is automatically detected and the resolution adjusted accordingly. The font can be adjusted for each OSD system in the Settings dialogue.
 
 # Beeper
 
 For convience, it is possible to mute beeper in simulation mode:
 
-![](beeper.png)
-
 # Analog Video link quality simulation
 
 Plugin will simulate analog video link quality acccording to setting. Home point is independent from FC home point. Home point is set to position on ARM.
 
-![](noise.jpg)
-
-# Flight path drawing 
-
-Plugin can draw flight path on X-Plane map. 
-
-![](menu_map.png)
-
-Coordinates can be extracted from:
-- **Latitude/Longitude from OSD** -  extracted from OSD. Note that these number have low accuracy and are not updated synchronously. Path will have jittering under zoom.
-- **debug[0]/debug[1] as Latitude/Longitude** - assumed that coordinates are provided in debug[0]/debug[1] variables by custom INAV build (int32_t, int32_t).
+# Map
 
 Other menu options:
 - **Download waypoints from FC** - this option will download Mission waypoints from FC and show on X-Plane map (in pink color)
 - **Teleport to location** - See [Teleporting to GPS coordinates](setup.md#teleporting-to-gps-coordinates).
-
-Path is drawn on "INAV HITL" layer:
-![](map.png)
 
 # Teleporting to GPS coordinates
 
@@ -197,7 +187,7 @@ An option in **Map** menu allows to teleport plane to any GPS location from clip
 
 Right click in Google Maps, then click on the coordinates to copy them to clipboard:
 
-![](googlemaps.png)
+![](img/googlemaps.png)
 
 Then select **Plugin->INAV HITL->Map->Teleport to location (from clipboard)**
 
@@ -211,27 +201,17 @@ Autotrim and servo autotrim have no effect in simulation (TODO).
 
 INAV SITL connection is supported since v 1.4.0.
 
-Unfortunatelly, current INav Configurator 7.0.x contains outdated SITL executable, also with critical bug which prevents using it with INav-HTIL-Plugin: https://github.com/iNavFlight/inav/pull/9564.
-
-Please download fixed SITL executable from artefacts of pull https://github.com/RomanLut/inav/actions/runs/9848753771?pr=15, unpack and replace **inav_STIL.exe** in the directory
-**\resources\sitl\windows\** inside INav Configurator 7.0.x directory (or **\resources\sitl\linux\inav_SITL** for Linux).
-
 Start SITL in configurator-only mode (do not select X-Plane/Realflight simulator).
 
-![](sitl_start.png)
+![](img/sitl_start.png)
 
 Connect INav Configurator to SITL and do minimal setup:
 
-![](sitl_cfg_connect.png)
+![](img/sitl_cfg_connect.png)
 
 Connect simulator using an option in X-Plane menu: select virtual **UART** which has MSP connection enabled in configurator and is not occupied by curent configurator connection:
 
-![](sitl_connect_sim.png)
-
-
-## Known issues with SITL
-- Configrator stuck while appling presets ("Airplane without tail etc") https://github.com/iNavFlight/inav-configurator/pull/1922. 
-Give it a minute, close, reconnect and "Load and apply" mixer settings in Mixer tab manually.
+![](img/sitl_connect_sim.png)
 
 - Serial-to-TCP app may not start. You may need to start it manually, f.e. ```\resources\sitl\windows\Ser2TCP.exe --comport=COM7 --baudrate=420000 --stopbits=One --parity=None --ip=127.0.0.1 --tcpport=5762``` for ELRS receiver connected to COM7.
 
