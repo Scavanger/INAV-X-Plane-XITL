@@ -62,7 +62,7 @@ namespace DefaultSetting
         { SettingsKeys::SETTINGS_GPS_TIMEOUT, DefaultSettingKey(SettingsSections::SECTION_SIMDATA, "0") },
         { SettingsKeys::SETTINGS_GPS_GLITCH, DefaultSettingKey(SettingsSections::SECTION_SIMDATA, "0") },
         { SettingsKeys::SETTINGS_MAG_FAILURE, DefaultSettingKey(SettingsSections::SECTION_SIMDATA, "0") },
-        { SettingsKeys::SETTINGS_ATTITUDE_COPY_FROM_XPLANE, DefaultSettingKey(SettingsSections::SECTION_SIMDATA, "0") },
+        { SettingsKeys::SETTINGS_ATTITUDE_COPY_FROM_XPLANE, DefaultSettingKey(SettingsSections::SECTION_SIMDATA, "1") },
         { SettingsKeys::SETTINGS_BATTERY_EMULATION, DefaultSettingKey(SettingsSections::SECTION_SIMDATA, "0") },
         { SettingsKeys::SETTINGS_MUTE_BEEPER, DefaultSettingKey(SettingsSections::SECTION_SIMDATA, "1") },
         { SettingsKeys::SETTINGS_SIMULATE_PITOT, DefaultSettingKey(SettingsSections::SECTION_SIMDATA, "1") },

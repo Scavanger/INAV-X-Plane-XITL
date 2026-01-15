@@ -86,7 +86,7 @@ void SettingsWindow::loadSettings()
         wtfOSFontIndex = 0;
     }
 
-    copyAttitudeFromXPlane = setting->GetSettingAs<bool>(SettingsSections::SECTION_GENERAL, SettingsKeys::SETTINGS_ATTITUDE_COPY_FROM_XPLANE, true);
+    copyAttitudeFromXPlane = setting->GetSettingAs<bool>(SettingsSections::SECTION_SIMDATA, SettingsKeys::SETTINGS_ATTITUDE_COPY_FROM_XPLANE, true);
     muteBeeper = setting->GetSettingAs<bool>(SettingsSections::SECTION_GENERAL, SettingsKeys::SETTINGS_MUTE_BEEPER, true);
 }
 
@@ -107,7 +107,7 @@ void SettingsWindow::saveSettings()
     setting->SetSetting(SettingsSections::SECTION_OSD, SettingsKeys::SETTINGS_AVATAR_OSD_FONT, std::string(avatarFonts[avatarFontIndex]));
     setting->SetSetting(SettingsSections::SECTION_OSD, SettingsKeys::SETTINGS_WTFOS_OSD_FONT, std::string(wtfOSFonts[wtfOSFontIndex]));
 
-    setting->SetSetting(SettingsSections::SECTION_GENERAL, SettingsKeys::SETTINGS_ATTITUDE_COPY_FROM_XPLANE, copyAttitudeFromXPlane);
+    setting->SetSetting(SettingsSections::SECTION_SIMDATA, SettingsKeys::SETTINGS_ATTITUDE_COPY_FROM_XPLANE, copyAttitudeFromXPlane);
     setting->SetSetting(SettingsSections::SECTION_GENERAL, SettingsKeys::SETTINGS_MUTE_BEEPER, muteBeeper);
     setting->SetSetting(SettingsSections::SECTION_GENERAL, SettingsKeys::SETTINGS_RESTART_ON_AIRPORT_LOAD, restartOnAirportLoad);
 

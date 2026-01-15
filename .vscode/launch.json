@@ -5,7 +5,7 @@
             "type": "cppdbg",
             "request": "attach",
             // For other OS replace "lin.xpl" with "win.xpl" or "mac.xpl"
-            "program": "${config:xplane.folder}/Aircraft/Extra Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-HITL/64/lin.xpl",
+            "program": "${config:xplane.folder}/Aircraft/Extra Aircraft/NK_FPVSurfwing/plugins/INAV-X-Plane-XITL/64/lin.xpl",
             "processId": "${command:pickProcess}",
             // You may want to change the following two lines when using Windows or Mac
             "MIMode": "gdb",
@@ -23,7 +23,7 @@
             "name": "(gdb) Attach to XPlane - Windows",
             "type": "cppdbg",
             "request": "attach",
-            "program": "${config:xplane.folder}\\Aircraft\\Extra Aircraft\\NK_FPVSurfwing\\plugins\\INAV-X-Plane-HITL\\64\\win.xpl",
+            "program": "${config:xplane.folder}\\Aircraft\\Extra Aircraft\\NK_FPVSurfwing\\plugins\\INAV-X-Plane-XITL\\64\\win.xpl",
             "processId": "${command:pickProcess}",
             "MIMode": "gdb",
             "miDebuggerPath": "c:\\msys64\\ucrt64\\bin\\gdb.exe",

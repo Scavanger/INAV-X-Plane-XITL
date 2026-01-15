@@ -1,9 +1,7 @@
-
-
-# diff all 
+diff all
 
 # version
-# INAV/SPEEDYBEEF405WING 9.0.0 Dec 29 2025 / 20:29:10 (38a56feb) 
+# INAV/SPEEDYBEEF405WING 9.0.0 Jan 14 2026 / 21:14:14 (bf801d40) 
 # GCC-13.2.1 20231009
 
 # start the command batch
@@ -17,8 +15,6 @@ defaults noreboot
 # Timer overrides
 
 # Outputs [servo]
-servo 1 1000 2000 1500 -100
-servo 4 1000 2000 1500 -100
 
 # safehome
 
@@ -29,10 +25,7 @@ servo 4 1000 2000 1500 -100
 # geozone vertices
 
 # features
-feature GEOZONE
 feature GPS
-feature FW_LAUNCH
-feature FW_AUTOTRIM
 
 # beeper
 
@@ -55,9 +48,7 @@ blackbox SERVOS
 # Receiver: Channel map
 
 # Ports
-serial 0 1 115200 115200 0 115200
 serial 1 33554432 115200 115200 0 115200
-serial 5 0 115200 115200 0 115200
 
 # LEDs
 
@@ -73,12 +64,12 @@ aux 3 53 1 1375 1475
 aux 4 11 1 1550 1650
 aux 5 10 1 1900 2100
 aux 6 28 1 1450 1550
-aux 7 21 2 1700 2100
-aux 8 54 2 900 1300
-aux 9 19 3 1625 1875
-aux 10 42 3 1125 1375
-aux 11 43 3 1375 1625
-aux 12 44 3 1875 2100
+aux 7 21 3 1700 2100
+aux 8 54 3 900 1300
+aux 9 19 2 1625 1875
+aux 10 42 2 1125 1375
+aux 11 43 2 1375 1625
+aux 12 44 2 1875 2100
 
 # Adjustments [adjrange]
 adjrange 0 0 7 1025 1075 14 6
@@ -116,7 +107,7 @@ osd_layout 0 2 0 0 V
 osd_layout 0 3 8 6 V
 osd_layout 0 4 8 6 V
 osd_layout 0 7 28 15 V
-osd_layout 0 9 18 7 V
+osd_layout 0 9 17 7 V
 osd_layout 0 11 4 17 V
 osd_layout 0 12 12 13 H
 osd_layout 0 13 17 10 V
@@ -175,6 +166,7 @@ osd_layout 3 75 8 9 V
 osd_layout 3 76 21 11 V
 osd_layout 3 77 34 10 V
 osd_layout 3 85 37 4 V
+osd_layout 3 104 0 0 H
 osd_layout 3 108 7 4 H
 osd_layout 3 109 7 7 H
 osd_layout 3 110 22 11 H
@@ -192,10 +184,12 @@ osd_layout 3 118 21 12 V
 
 # master
 set gyro_main_lpf_hz = 25
-set gyro_zero_x = 3
-set gyro_zero_y = -8
-set gyro_zero_z = 7
-set ins_gravity_cmss =  980.402
+set dynamic_gyro_notch_q = 250
+set dynamic_gyro_notch_min_hz = 30
+set gyro_zero_x = 2
+set gyro_zero_y = -11
+set gyro_zero_z = 3
+set ins_gravity_cmss =  980.680
 set gyro_adaptive_filter_min_hz = 20
 set acc_hardware = ICM42605
 set rangefinder_hardware = FAKE
@@ -206,7 +200,6 @@ set pitot_hardware = VIRTUAL
 set receiver_type = SIM (SITL)
 set blackbox_rate_denom = 2
 set motor_pwm_protocol = STANDARD
-set align_board_pitch = 2
 set small_angle = 180
 set applied_defaults = 3
 set airmode_type = STICK_CENTER_ONCE
@@ -219,7 +212,7 @@ set nav_fw_launch_motor_delay = 100
 set nav_fw_launch_max_altitude = 5000
 set nav_fw_launch_climb_angle = 25
 set osd_video_system = DJIWTF
-set name = SITL
+set osd_failsafe_switch_layout = ON
 
 # control_profile
 control_profile 1
@@ -227,10 +220,11 @@ control_profile 1
 set fw_p_pitch = 15
 set fw_i_pitch = 5
 set fw_d_pitch = 5
-set fw_ff_pitch = 80
+set fw_ff_pitch = 180
 set fw_p_roll = 15
 set fw_i_roll = 3
 set fw_d_roll = 7
+set fw_ff_roll = 190
 set fw_p_yaw = 50
 set fw_i_yaw = 0
 set fw_d_yaw = 20
@@ -244,9 +238,9 @@ set d_boost_min =  1.000
 set d_boost_max =  1.000
 set rc_expo = 30
 set rc_yaw_expo = 30
-set roll_rate = 18
-set pitch_rate = 9
-set yaw_rate = 3
+set roll_rate = 53
+set pitch_rate = 50
+set yaw_rate = 4
 
 # control_profile
 control_profile 2
@@ -264,8 +258,7 @@ set fw_d_yaw = 20
 set fw_ff_yaw = 255
 set dterm_lpf_hz = 10
 set fw_turn_assist_pitch_gain =  0.400
-set nav_fw_pos_z_p = 25
-set nav_fw_pos_z_d = 8
+set nav_fw_pos_z_p = 35
 set nav_fw_pos_xy_p = 55
 set d_boost_min =  1.000
 set d_boost_max =  1.000
@@ -291,8 +284,7 @@ set fw_d_yaw = 20
 set fw_ff_yaw = 255
 set dterm_lpf_hz = 10
 set fw_turn_assist_pitch_gain =  0.400
-set nav_fw_pos_z_p = 25
-set nav_fw_pos_z_d = 8
+set nav_fw_pos_z_p = 35
 set nav_fw_pos_xy_p = 55
 set d_boost_min =  1.000
 set d_boost_max =  1.000
@@ -334,7 +326,6 @@ mixer_profile 2
 # battery_profile
 battery_profile 1
 
-set battery_capacity = 2200
 set throttle_idle =  5.000
 
 # battery_profile

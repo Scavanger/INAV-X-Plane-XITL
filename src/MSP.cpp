@@ -22,7 +22,7 @@ namespace MSPConstants {
     static constexpr int MSP_COMM_TIMEOUT_MS = 3000;
     static constexpr int MSP_COMM_DEBUG_TIMEOUT_MS = 60000;
     static constexpr int JUMBO_FRAME_MIN_SIZE = 255;
-    static constexpr int RECONNECT_DELAY_MS = 5000;
+    static constexpr int RECONNECT_DELAY_MS = 10000;
     static constexpr int MAX_LINUX_TTY_PORTS = 16; // Max /dev/ttyACMx and /dev/ttyUSBx ports to probe, should be enough for everyone
     static constexpr int MAX_WINDOWS_COM_PORTS = 32; // Max COM ports to probe on Windows
     
@@ -334,7 +334,11 @@ void MSP::disconnect()
     {
         timeout = this->state == STATE_TIMEOUT;
         this->state = STATE_DISCONNECTED;
-        Plugin()->GetEventBus()->Publish<SimulatorConnectedEventArg>("SimulatorConnected", SimulatorConnectedEventArg(timeout ? ConnectionStatus::DisconnectedTimeout : ConnectionStatus::Disconnected));
+        auto eventArg = SimulatorConnectedEventArg(
+            timeout ? ConnectionStatus::DisconnectedTimeout : ConnectionStatus::Disconnected
+        );
+
+        Plugin()->GetEventBus()->Publish<SimulatorConnectedEventArg>("SimulatorConnected", eventArg);
     }
 }
 

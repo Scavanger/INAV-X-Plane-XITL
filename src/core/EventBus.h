@@ -154,7 +154,7 @@ class SimulatorConnectedEventArg
 {
 public:
     ConnectionStatus status;
-
+    
     SimulatorConnectedEventArg() = default;
     SimulatorConnectedEventArg(ConnectionStatus stat) : status(stat) {}
 };
