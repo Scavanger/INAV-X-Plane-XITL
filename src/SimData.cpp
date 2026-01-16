@@ -142,6 +142,7 @@ SimData::SimData() : isHitlConnected(false)
 
     this->lastUpdateMS = this->lastUpdateTimeFlightLoop = 0;
 
+    this->df_hasJoystick = XPLMFindDataRef("sim/joystick/has_joystick");
     this->df_override_joystick = XPLMFindDataRef("sim/operation/override/override_joystick");
     this->df_control_throttle = XPLMFindDataRef("sim/cockpit2/engine/actuators/throttle_ratio_all");
     this->df_control_roll = XPLMFindDataRef("sim/joystick/yoke_roll_ratio");
@@ -445,6 +446,8 @@ void SimData::updateFromXPlane()
 
     if (this->isHitlConnected)
     {
+    
+        this->hasJoystick = XPLMGetDatai(this->df_hasJoystick) != 0;      
         XPLMGetDatavf(this->df_rc_inputs, &this->rc_inputs[SimDataConstants::RC_CHANNEL_PITCH], 1, 1);
         XPLMGetDatavf(this->df_rc_inputs, &this->rc_inputs[SimDataConstants::RC_CHANNEL_ROLL], 2, 1);
         XPLMGetDatavf(this->df_rc_inputs, &this->rc_inputs[SimDataConstants::RC_CHANNEL_YAW], 3, 1);
@@ -602,11 +605,11 @@ void SimData::sendToINAV_HITL()
                  (this->muteBeeper ? SIMU_MUTE_BEEPER : 0) |
                  (this->attitude_use_sensors ? SIMU_USE_SENSORS : 0) |
                  (this->GPSHasNewData && !this->gps_timeout ? SIMU_HAS_NEW_GPS_DATA : 0) |
-                 SIMU_EXT_BATTERY_VOLTAGE |
-                 (this->simulatePitot ? SIMU_AIRSPEED : 0) |
+                 (this->batEmulation != BATTERY_NONE ? SIMU_EXT_BATTERY_VOLTAGE : 0) |
+                 (this->simulatePitot != TPitotSimulation::None ? SIMU_AIRSPEED : 0) |
                  (this->simulatePitot == TPitotSimulation::Failure ? SIMU2_PITOT_FAILURE : 0) |
-                 SIMU3_CURRENT_SENSOR |
-                 SIMU3_RC_INPUT |
+                 (this->batEmulation != BATTERY_NONE ? SIMU3_CURRENT_SENSOR : 0) |
+                 (this->hasJoystick ? SIMU3_RC_INPUT : 0) |
                  (this->rangefinderSimulation != RANGEFINDER_NONE ? SIMU3_RANGEFINDER : 0) |
                  (this->rxIsFailsafe ? SIMU3_RX_FAILSAFFE : 0);
 

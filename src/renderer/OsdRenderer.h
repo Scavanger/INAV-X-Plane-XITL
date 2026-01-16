@@ -1,6 +1,8 @@
 #pragma once
 
 #include <filesystem>
+#include <memory>
+
 #include "Shader.h"
 
 namespace fs = std::filesystem;
@@ -9,8 +11,8 @@ class OsdRenderer
 {
 private:
 
-  Shader *shader;
-  Shader *interferenceShader;
+  std::unique_ptr<Shader> shader;
+  std::unique_ptr<Shader> interferenceShader;
 
   GLuint VAO;
   GLuint VBO;
@@ -30,6 +32,5 @@ public:
   void loadOSDTextures(const std::vector<std::vector<uint8_t>>& textures, int width, int height, bool smoothed);
   void drawOSD(const std::vector<uint16_t>& osdData, int rows, int cols, int cellWidth, int cellHeight, int xOffset, int yOffset, bool blink);
   void drawInterferenceTexture(int textureId, int x, int y, int width, int height, float transparency);
-
 };
 

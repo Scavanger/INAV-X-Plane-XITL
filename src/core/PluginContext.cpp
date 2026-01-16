@@ -68,6 +68,5 @@ void PluginContext::Reset()
 
 PluginContext PluginContext::CreateForTesting()
 {
-    // Erstelle einen neuen Context ohne Singleton zu verwenden
     return PluginContext();
 }

@@ -1,5 +1,5 @@
 {
     // Set your X-PLane install folder to deploy the plugin directly to X-Plane while debugging
-    //"xplane.folder" : "/home/andi/.steam/steam/steamapps/common/X-Plane 11"
-    "xplane.folder": "D:\\SteamLibrary\\steamapps\\common\\X-Plane 11"
+    "xplane.folder" : "/home/andi/.steam/steam/steamapps/common/X-Plane 11"
+    //"xplane.folder": "D:\\SteamLibrary\\steamapps\\common\\X-Plane 11"
 }

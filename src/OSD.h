@@ -122,7 +122,6 @@ private:
     std::vector<uint16_t> toastData;
     uint32_t toastEndTime = 0;
 
-
     std::string activeAnalogFont = "";
     std::string activeDigitalFont = "";
     std::vector<FontBase *> fonts;

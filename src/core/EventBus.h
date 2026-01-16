@@ -19,33 +19,16 @@
 using namespace MathUtils;
 
 /**
- * @brief Event-basiertes Observer Pattern für lose Kopplung zwischen Komponenten
- * 
- * Der EventBus verwendet String-basierte Event-Identifikation mit optionalen typed Arguments.
- * Events können mit oder ohne Argumente verwendet werden.
- * 
- * Beispiele:
- *   // Einfaches Event ohne Argumente
- *   eventBus->Subscribe("MyEvent", []() {
- *     Utils::LOG("MyEvent fired!");
- *   });
- *   eventBus->Publish("MyEvent");
- *   
- *   // Event mit typed Arguments
- *   eventBus->Subscribe<SimulatorConnectedEvent>("Connected", [](const SimulatorConnectedEvent& event) {
- *     if (event.isConnected) { ... }
- *   });
- *   eventBus->Publish("Connected", SimulatorConnectedEvent{true});
+ * @brief Event-based observer pattern for loose coupling between components
  */
 
-// Haupt-EventBus Klasse
 class EventBus
 {
 private:
-    // Void listeners - einfach Funktionen speichern
+    // Void listeners
     std::map<std::string, std::vector<std::function<void()>>> voidListeners;
     
-    // Typed listeners - speichern Funktion und Type Info zusammen
+    // Typed listeners 
     struct TypedListenerEntry
     {
         std::type_info const* typeInfo;
@@ -54,31 +37,17 @@ private:
     std::map<std::string, std::vector<TypedListenerEntry>> typedListeners;
 
 public:
-    // Default Constructor
     EventBus() = default;
-    
-    // Destruktor
     ~EventBus() = default;
-    
-    // Nicht kopierbar
     EventBus(const EventBus&) = delete;
+
     EventBus& operator=(const EventBus&) = delete;
-    /**
-     * @brief Subscribiert einen Listener auf einen Event ohne Arguments
-     * @param eventName Der Name des Events (z.B. "SimulatorConnected")
-     * @param listener Callback-Funktion ohne Parameter
-     */
+
     void Subscribe(const std::string& eventName, const std::function<void()>& listener)
     {
         voidListeners[eventName].push_back(listener);
     }
-
-    /**
-     * @brief Subscribiert einen Listener auf einen Event mit typed Arguments
-     * @tparam EventType Der Typ des Event-Arguments
-     * @param eventName Der Name des Events
-     * @param listener Callback-Funktion mit EventType Parameter
-     */
+    
     template<typename EventType>
     void Subscribe(const std::string& eventName, const std::function<void(const EventType&)>& listener)
     {
@@ -95,10 +64,6 @@ public:
         typedListeners[eventName].push_back(entry);
     }
 
-    /**
-     * @brief Publiziert einen Event ohne Arguments
-     * @param eventName Der Name des Events
-     */
     void Publish(const std::string& eventName)
     {
         auto it = voidListeners.find(eventName);
@@ -111,12 +76,6 @@ public:
         }
     }
 
-    /**
-     * @brief Publiziert einen Event mit typed Arguments
-     * @tparam EventType Der Typ des Event-Arguments
-     * @param eventName Der Name des Events
-     * @param event Die Event-Daten
-     */
     template<typename EventType>
     void Publish(const std::string& eventName, const EventType& event)
     {
@@ -133,9 +92,6 @@ public:
         }
     }
 
-    /**
-     * @brief Löscht alle Listener
-     */
     void Clear()
     {
         voidListeners.clear();
@@ -143,13 +99,6 @@ public:
     }
 };
 
-// 
-// Vordefinierte Event-Argument-Typen (nur noch für Events mit Arguments)
-// 
-
-/**
- * @brief Event-Argument wenn die Verbindung zum Flight Controller hergestellt wurde
- */
 class SimulatorConnectedEventArg
 {
 public:
@@ -170,9 +119,6 @@ public:
     OsdToastEventArg(const std::string& msgLine1, const std::string& msgLine2, int duration) : messageLine1(msgLine1), messageLine2(msgLine2), durationMs(duration) {}
 };
 
-/**
- * @brief Event-Argument wenn neue MSP Daten vom FC empfangen wurden
- */
 class MSPMessageEventArg
 {
 public:
@@ -184,34 +130,7 @@ public:
     MSPMessageEventArg(MSPCommand cmd, const std::vector<uint8_t>& buffer) : command(cmd), messageBuffer(buffer) {}
 };
 
-/**
- * @brief Event-Argument wenn neue Sensor-Daten verfügbar sind
- */
-class SensorDataUpdatedEventArg
-{
-public:
-    uint32_t updateTime = 0;
 
-    SensorDataUpdatedEventArg() = default;
-    SensorDataUpdatedEventArg(uint32_t time) : updateTime(time) {}
-};
-
-/**
- * @brief Event-Argument wenn OSD Status sich ändert
- */
-class OSDStatusChangedEventArg
-{
-public:
-    bool isDisabled = false;
-    bool isSupported = false;
-
-    OSDStatusChangedEventArg() = default;
-    OSDStatusChangedEventArg(bool disabled, bool supported) : isDisabled(disabled), isSupported(supported) {}
-};
-
-/**
- * @brief Event-Argument bei Flugschleife Iteration
- */
 class FlightLoopEventArg
 {
 public:
@@ -222,18 +141,6 @@ public:
     FlightLoopEventArg(float elapsed, int ctr) : elapsedTime(elapsed), cycle(ctr) {}
 };
 
-/**
- * @brief Event-Argument bei Fehler im Simulator
- */
-class SimulatorErrorEventArg
-{
-public:
-    std::string errorMessage;
-    bool shouldDisconnect = false;
-
-    SimulatorErrorEventArg() = default;
-    SimulatorErrorEventArg(const std::string& msg, bool disconnect) : errorMessage(msg), shouldDisconnect(disconnect) {}
-};
 
 class FontEventArg
 {
@@ -245,9 +152,6 @@ class FontEventArg
     FontEventArg(const std::string& name, std::string type) : fontName(name), type(type) {}
 };
 
-/**
- * @brief Event-Argument wenn Settings sich ändern
- */
 class SettingsChangedEventArg
 {
 public:
@@ -274,16 +178,14 @@ public:
             } else if constexpr (std::is_enum_v<T>) {
                 return static_cast<T>(std::stoi(value));
             } else {
-            return stdValue;
+                return stdValue;
             }
         } catch (...) {
             return stdValue;
         } 
     }
 };
-/**
- * @brief Event-Argument für Menu Connect/Disconnect
- */
+
 class MenuConnectEventArg
 {
 public:
@@ -296,9 +198,6 @@ public:
     MenuConnectEventArg(bool toSitl, std::string ip, int port) : toSitl(toSitl), sitlIp(ip), sitlPort(port) {}
 };
 
-/**
- * @brief Event-Argument für Draw Callback Phase
- */
 class DrawCallbackEventArg
 {
 public:
@@ -404,4 +303,3 @@ public:
           scaledThrottle(throttle), rssi(rssiVal), isFailsafe(failsafe)
     {}
 };
-

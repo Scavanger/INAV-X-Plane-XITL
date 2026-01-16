@@ -201,10 +201,6 @@ Autotrim and servo autotrim have no effect in simulation (TODO).
 
 INAV SITL connection is supported since v 1.4.0.
 
-Start SITL in configurator-only mode (do not select X-Plane/Realflight simulator).
-
-![](img/sitl_start.png)
-
 Connect INav Configurator to SITL and do minimal setup:
 
 ![](img/sitl_cfg_connect.png)

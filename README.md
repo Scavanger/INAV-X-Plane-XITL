@@ -2,6 +2,7 @@
 
 ## XITL - HITL (Hardware) and SITL (Software) in the loop for INAV
 
+![OSD](doc/img/osd.png)
 
 Since the original X-Plane HITL plugin appears to be no longer in development, we are continuing here.
 Name change to XITL to make it clear that HITL and SITL connections are supported equally.
@@ -22,8 +23,7 @@ New features and improvements in version 2.0:
 #### SITL/HITL
 - Rangefinder sensor with 10 m range
 - Simulation of a drive train (Lipo/Lion battery with different capacities and motor/propeller for realistic voltage and current)
-- Simulation of the reception strength (RSSI) of a virtual receiver
-- Failsafe simulation
+- Virtual RX: Simulation of the reception strength (RSSI) and failsafe
 
 #### HITL
 - Option to use the USB transmitter/joystick connected to X-Plane

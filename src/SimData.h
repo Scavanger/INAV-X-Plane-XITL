@@ -222,6 +222,8 @@ private:
     XPLMDataRef df_baro;
 
     // RC Inputs
+    XPLMDataRef df_hasJoystick;
+    bool hasJoystick = false;
     XPLMDataRef df_rc_inputs;
     float rc_inputs[SimDataConstants::RC_INPUT_CHANNELS];
 

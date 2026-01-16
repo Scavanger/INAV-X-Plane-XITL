@@ -120,8 +120,8 @@ OsdRenderer::OsdRenderer()
     glBindVertexArray(0);
 
     this->textureArray = 0;
-    this->shader = new Shader();
-    this->interferenceShader = new Shader();
+    this->shader = std::make_unique<Shader>();
+    this->interferenceShader = std::make_unique<Shader>();
 
     std::string vertexShaderSource = loadShaderSource("vertex.vert");
     std::string osdFragmentShaderSource = loadShaderSource("osd.frag");
@@ -133,8 +133,6 @@ OsdRenderer::OsdRenderer()
 
 OsdRenderer::~OsdRenderer()
 {
-    delete this->shader;
-    delete this->interferenceShader;
     glDeleteTextures(1, &textureArray);
     for (GLuint texture : this->textures)
     {

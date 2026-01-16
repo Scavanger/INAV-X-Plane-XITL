@@ -23,7 +23,6 @@ void TCPSerial::OpenConnection(std::string& connectionString)
     if (colonPos == std::string::npos)
     {
         throw std::invalid_argument("Invalid connection string format. Expected format: address:port");
-        return;
     }
 
     int port = 0;
@@ -35,7 +34,6 @@ void TCPSerial::OpenConnection(std::string& connectionString)
     catch (const std::exception &e)
     {
         throw std::invalid_argument("Invalid port number in connection string.");
-        return;
     }
 
 #if IBM
@@ -51,14 +49,13 @@ void TCPSerial::OpenConnection(std::string& connectionString)
 #else
     this->sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 #endif
+
     if (this->sockfd == INVALID_SOCKET)
     {
-
 #if IBM
         WSACleanup(); // Cleanup on Windows
 #endif
         throw std::runtime_error("Failed to create socket");
-        return;
     }
 
     struct sockaddr_in serverAddr = {0};
@@ -71,23 +68,17 @@ void TCPSerial::OpenConnection(std::string& connectionString)
         this->CloseConnection();
         throw std::runtime_error("Failed to connect to the server");
     }
-
-#if LIN
-    int flags = fcntl(sockfd, F_GETFL, 0);
-    if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == SOCKET_ERROR) {
-        this->CloseConnection();
-        throw std::runtime_error("Failed to set socket to non-blocking mode");
-    }
-#endif
-
+    
 #if IBM
     unsigned long one = 1;
-    if (ioctlsocket(this->sockfd, FIONBIO, &one) == SOCKET_ERROR)
-    {
+    if (ioctlsocket(this->sockfd, FIONBIO, &one) == SOCKET_ERROR) {
+#elif LIN
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == SOCKET_ERROR) {
+#endif
         this->CloseConnection();
         throw std::runtime_error("Failed to set socket mode to non-blocking");
     }
-#endif
 
     this->connected = true;
 }
@@ -98,7 +89,7 @@ void TCPSerial::CloseConnection()
         return;
     }
 
-#ifdef _WIN32
+#if IBM
     closesocket(sockfd);
     WSACleanup();
 #else
@@ -137,6 +128,7 @@ std::vector<uint8_t> TCPSerial::ReadData()
     {
         buffer.resize(bytesRead);
         return buffer;
+
     }
     else if (bytesRead == 0)
     {
@@ -173,9 +165,7 @@ void TCPSerial::flushOut()
 
 TCPSerial::~TCPSerial()
 {
-    if (this->connected)
-    {
-        this->CloseConnection();
-        this->connected = false;
-    }
+
+    this->CloseConnection();
+
 }

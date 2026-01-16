@@ -149,9 +149,7 @@ namespace Utils
 
     static bool IsDebuggerAttached()
     {
-#if LIN || APL
-        return ptrace(PTRACE_TRACEME, 0, 1, 0) == -1;
-#elif IBM
+#if IBM
         return IsDebuggerPresent();
 #else
         return false;
